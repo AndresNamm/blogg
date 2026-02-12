@@ -59,6 +59,23 @@ function generateIndex(mdFiles: string[]) {
   console.log('Generated: index.html');
 }
 
+function copyImages() {
+  const imagesSource = path.join(postsDir, 'images');
+  const imagesDest = path.join(buildDir, 'images');
+
+  if (!fs.existsSync(imagesSource)) {
+    return;
+  }
+
+  ensureDir(imagesDest);
+
+  const files = fs.readdirSync(imagesSource);
+  for (const file of files) {
+    fs.copyFileSync(path.join(imagesSource, file), path.join(imagesDest, file));
+  }
+  console.log(`Copied ${files.length} image(s) to build/images/`);
+}
+
 async function build() {
   ensureDir(buildDir);
   const mdFiles = getAllMarkdownFiles();
@@ -70,6 +87,7 @@ async function build() {
 
   await Promise.all(mdFiles.map(convertMarkdownToHtml));
   generateIndex(mdFiles);
+  copyImages();
   console.log('Build complete!');
 }
 
