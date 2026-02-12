@@ -76,7 +76,7 @@ Consider a simple experiment: **rolling a fair six-sided die**.
 | Roll greater than 3 $B$ | $\{4, 5, 6\}$ | $P(B) = \frac{3}{6} = 0.5$ |
 | $A \cap B$ (even **and** greater than 3) | $\{4, 6\}$ | $P(A \cap B) = \frac{2}{6} \approx 0.33$ |
 
-> **Are A and B independent?**
+**Are A and B independent?**
 >
 > Check: $P(A)P(B) = 0.5 \times 0.5 = 0.25$, but $P(A \cap B) \approx 0.33$
 >
