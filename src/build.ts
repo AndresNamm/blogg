@@ -32,7 +32,7 @@ async function convertMarkdownToHtml(mdPath: string) {
   const htmlContent = await marked(mdContent);
   const template = readTemplate();
   const fileName = path.basename(mdPath, '.md');
-  const title = fileName.charAt(0).toUpperCase() + fileName.slice(1);
+  const title = extractTitle(mdPath);
 
   const finalHtml = template
     .replace('{{TITLE}}', title)
@@ -43,13 +43,24 @@ async function convertMarkdownToHtml(mdPath: string) {
   console.log(`Generated: ${fileName}.html`);
 }
 
+function extractTitle(mdPath: string): string {
+  const content = fs.readFileSync(mdPath, 'utf-8');
+  const match = content.match(/^#\s+(.+)$/m);
+  if (match) {
+    return match[1].trim();
+  }
+  const fileName = path.basename(mdPath, '.md');
+  return fileName.charAt(0).toUpperCase() + fileName.slice(1);
+}
+
 function generateIndex(mdFiles: string[]) {
   const links = mdFiles.map(mdPath => {
     const fileName = path.basename(mdPath, '.md');
-    return `<li><a href="${fileName}.html">${fileName}</a></li>`;
+    const title = extractTitle(mdPath);
+    return `<li><a href="${fileName}.html">${title}</a></li>`;
   }).join('\n    ');
 
-  const indexContent = `<h1>Blog Posts</h1>\n<ul>\n    ${links}\n</ul>`;
+  const indexContent = `<h1>Blog Posts</h1>\n<ul class="post-list">\n    ${links}\n</ul>`;
   const template = readTemplate();
   const finalHtml = template
     .replace('{{TITLE}}', 'Blog')
