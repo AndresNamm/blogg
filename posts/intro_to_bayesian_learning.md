@@ -119,11 +119,11 @@ Also in medicine there is this cancer example. Question is, if we have received 
 
 PS
 
-|  | POSITIVE | NEGATIVE | SUM |
-| --- | --- | --- | --- |
-| CANCER | P(positive | cancer)P(cancer)=0.9*0.00001 | P(negative | cancer)P(cancer)=? |  |
-| NO CANCER | P(positive | no cancer)P(no cancer)=0.1*0.99999 | P(negative | no cancer)P(no cancer)= |  |
-|  | You can make a positive prediction with cancer or with no cancer | You can make a positive negative with cancer or with no cancer |  |
+|           | POSITIVE                                         | NEGATIVE                                         | SUM                  |
+| --------- | ------------------------------------------------ | ------------------------------------------------ | -------------------- |
+| CANCER    | P(positive \| cancer)P(cancer)=0.9*0.00001       | P(negative \| cancer)P(cancer)=0.1*0.00001       | P(cancer)=0.00001    |
+| NO CANCER | P(positive \| no cancer)P(no cancer)=0.1*0.99999 | P(negative \| no cancer)P(no cancer)=0.9*0.99999 | P(no cancer)=0.99999 |
+| SUM       | P(positive)=0.9*0.00001+0.1*0.99999              | P(negative)=0.1*0.00001+0.9*0.99999              | 1                    |
 
 # REFERENCE
 
@@ -140,7 +140,3 @@ LK 37-42 Kalev Pärna Tõenäosusteooria algkursuses
     - See annab meile võimaluse saada kätte tõenäosus, et on A kui on juhtunud B - Äge on see, et me saame selle valemiga tuletada teadmisest, Mis on B tõenäosus, kui juhtub A
     
 
-# TODO
-
-- [ ]  Go over Python example.
-- [ ]  Example what f could be
