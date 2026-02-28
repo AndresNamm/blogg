@@ -2,7 +2,11 @@ Here we focus on only translation of point P from global origin G to camera orig
 
 # 3D TRANSLATION
 
-![image.png](images/ex1.png)
+
+
+![](images/ex1.png)
+
+
 
 Hint: think 1 axis dimension at time
 
@@ -14,4 +18,4 @@ Hint: think 1 axis dimension at time
 
 # 1D TRANSLATION EXAMPLE
 
-![image.png](images/ex2.png)
+![](images/ex2.png)
