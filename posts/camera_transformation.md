@@ -36,13 +36,13 @@ In modern computer graphics and computer vision, it's essential to convert point
 
 # 1. The Problem Statement
 
-Let:
 
-- $P_{\text{global}} = \begin{pmatrix}x_g\\y_g\\z_g\end{pmatrix}$ (shown in gray) be the coordinates **of a randomly picked point (red) in the world frame.**
+
+- $P_{\text{global}} = \begin{pmatrix}x_g\\y_g\\z_g\end{pmatrix}$ are coordinates **of a randomly picked point in the world frame.**
 
 - The **camera's optical center** has coordinates $C = \begin{pmatrix}x_c\\y_c\\z_c\end{pmatrix}$
 
-- The camera's orientation **be given by an orthonormal basis of three unit vectors** (in world coordinates):
+- The camera's orientation **is given by an orthonormal basis of three unit vectors** (in world coordinates):
 
 $$
 \mathbf u = \begin{pmatrix}u_x\\u_y\\u_z\end{pmatrix},\quad\mathbf v = \begin{pmatrix}v_x\\v_y\\v_z\end{pmatrix},\quad\mathbf w = \begin{pmatrix}w_x\\w_y\\w_z\end{pmatrix}
@@ -56,7 +56,9 @@ $M \;\begin{pmatrix} P_{\text{global}} \\ 1 \end{pmatrix} = \begin{pmatrix} P_{\
 
 # 2. Translating the Origin
 
-First, we translate the world so that the camera center  goes to the origin.  In homogeneous form, this is the  matrix 
+First, we translate the world so that the camera center  goes to the origin. 
+
+In homogeneous form, this is the  matrix 
 
 $T =
 \begin{pmatrix}
@@ -72,7 +74,7 @@ $$
 T\,\begin{pmatrix}x\\y\\z\\1\end{pmatrix}=\begin{pmatrix}x - x_c\\[4pt]y - y_c\\[4pt]z - z_c\\[4pt]1\end{pmatrix}
 $$
 
-[VISUAL EXAMPLES OF TRANSLATIONS](https://www.notion.so/VISUAL-EXAMPLES-OF-TRANSLATIONS-2442e1a674b3807db5e9ea50e091e4fa?pvs=21)
+[VISUAL EXAMPLES OF TRANSLATIONS](translation_examples.md)
 
 ---
 
