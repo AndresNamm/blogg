@@ -1,12 +1,34 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { marked } from 'marked';
+import { Marked } from 'marked';
 import * as chokidar from 'chokidar';
 
 const rootDir = path.join(__dirname, '..');
 const postsDir = path.join(rootDir, 'posts');
 const buildDir = path.join(rootDir, 'build');
 const templatePath = path.join(rootDir, 'template', 'index.html');
+
+function stripHtml(input: string): string {
+  return input.replace(/<[^>]*>/g, '');
+}
+
+function decodeEntities(input: string): string {
+  return input
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function slugifyHeading(input: string): string {
+  return decodeEntities(stripHtml(input))
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
 
 function ensureDir(dir: string) {
   if (!fs.existsSync(dir)) {
@@ -91,7 +113,22 @@ function restoreMathSegments(html: string, segments: string[]): string {
 async function convertMarkdownToHtml(mdPath: string) {
   const mdContent = fs.readFileSync(mdPath, 'utf-8');
   const { masked, segments } = preserveMathSegments(mdContent);
-  const parsed = await marked(masked);
+  const headingSlugCounts = new Map<string, number>();
+  const parser = new Marked();
+
+  parser.use({
+    renderer: {
+      heading(text: string, level: number): string {
+        const baseSlug = slugifyHeading(text) || 'section';
+        const seen = headingSlugCounts.get(baseSlug) ?? 0;
+        headingSlugCounts.set(baseSlug, seen + 1);
+        const slug = seen === 0 ? baseSlug : `${baseSlug}-${seen}`;
+        return `<h${level} id="${slug}">${text}</h${level}>\n`;
+      }
+    }
+  });
+
+  const parsed = await parser.parse(masked);
   const htmlContent = restoreMathSegments(parsed, segments);
   const template = readTemplate();
   const fileName = path.basename(mdPath, '.md');
