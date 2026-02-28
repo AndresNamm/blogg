@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Defining Probability</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false, strict: 'ignore'});"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      line-height: 1.7;
+      color: #333;
+    }
+    header {
+      padding: 20px 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    header a {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #111;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    header a:hover { color: #0066cc; }
+    main { min-height: 60vh; padding-bottom: 40px; }
+    h1 { margin-top: 0; font-size: 2rem; color: #111; }
+    h2 { font-size: 1.5rem; color: #222; margin-top: 2em; }
+    h3 { font-size: 1.25rem; color: #333; margin-top: 1.5em; }
+    a { color: #0066cc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    pre { background: #f5f5f5; padding: 15px; overflow-x: auto; border-radius: 6px; }
+    code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+    pre code { background: none; padding: 0; }
+    img { max-width: 100%; height: auto; border-radius: 4px; }
+    .post-list { list-style: none; padding: 0; }
+    .post-list li {
+      padding: 14px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .post-list li:last-child { border-bottom: none; }
+    .post-list a { font-size: 1.1rem; }
+    footer {
+      padding: 20px 0;
+      margin-top: 40px;
+      border-top: 1px solid #e0e0e0;
+      font-size: 0.85rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/">DataLeaper</a>
+  </header>
+  <main>
+    <h1>Defining Probability</h1>
+<ul>
+<li><a href="#defining-probability">Defining Probability</a><ul>
+<li><a href="#probability-space">Probability Space</a><ul>
+<li><a href="#example">Example</a></li>
+</ul>
+</li>
+<li><a href="#lets-define-probability">Lets define probability</a><ul>
+<li><a href="#explaining--omega---2n-with-example">Explaining  $\\Omega$ - $2^n$ with Example</a></li>
+<li><a href="#assigning-probabilities-fair-die--each-sample-outcome-equally-likely">Assigning probabilities (fair die → each sample outcome equally likely):</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2>Probability Space</h2>
+<p>First we will define Probability Space, it consists of</p>
+<ul>
+<li><strong>Sample Space $\Omega$</strong></li>
+<li><strong>Points</strong> in <strong>Sample Space</strong> are called <strong>Sample Outcomes</strong> </li>
+<li><strong>Subsets</strong> of <strong>Sample Space</strong> are called <strong>Events</strong></li>
+</ul>
+<p><img src="images/event_space.png" alt="alt text"></p>
+<h3>Example</h3>
+<p>We have an experiment with 1 draw from pack of cards:</p>
+<ul>
+<li>Sample Space - All possible draws</li>
+<li>Sample Outcome - (Elementaarsündmus)<ul>
+<li>1 card draw</li>
+</ul>
+</li>
+<li>Example Events - (1 Event  can contain multiple Sample Outcomes)<ul>
+<li>Draw any card from Spades</li>
+<li>Draw any card more powerful than 6</li>
+</ul>
+</li>
+</ul>
+<h2>Lets define probability</h2>
+<p><strong>P,$\Omega$,F</strong></p>
+<ul>
+<li>First we need to define F, the Events Space <ul>
+<li>Event Space contains all possible events from Sample Space . </li>
+<li>This is it contains all possible subsets of Sample Outcomes from Sample Space. </li>
+<li>There is total  $\Omega$ - $2^n$  subsets like that:<ul>
+<li>n is the amount of sample outcomes</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Probability assigns now any event in F a certain probability P</li>
+</ul>
+<h3>Explaining  $\Omega$ - $2^n$ with Example</h3>
+<p>Consider a simple experiment: <strong>rolling a fair six-sided die</strong>.</p>
+<ul>
+<li><strong>Sample Space</strong>: $\Omega = \{1, 2, 3, 4, 5, 6\}$</li>
+<li><strong>Sample Outcomes</strong>: Each face value, e.g., rolling a 3</li>
+<li><strong>Event Space</strong> $F$: All $2^6 = 64$ possible subsets of $\Omega$</li>
+<li><strong>Some example events</strong>:<ul>
+<li>$A = \{2, 4, 6\}$ — rolling an even number</li>
+<li>$B = \{4, 5, 6\}$ — rolling a number greater than 3</li>
+</ul>
+</li>
+</ul>
+<p><strong>To bring this into even simple terms</strong>: each column here stands for whether a sample outcome happened or did not happen (1/0). This means all subsets will be multiplications on 2/binary options.</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$\{1\}$</td>
+<td>✓</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>$\{2, 4\}$</td>
+<td></td>
+<td>✓</td>
+<td></td>
+<td>✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>$\{1, 3, 5\}$</td>
+<td>✓</td>
+<td></td>
+<td>✓</td>
+<td></td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr>
+<td>$\{4, 5, 6\}$</td>
+<td></td>
+<td></td>
+<td></td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>$\{2, 3, 4, 5\}$</td>
+<td></td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr>
+<td>...</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>Assigning probabilities (fair die → each sample outcome equally likely):</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Outcomes</th>
+<th>Probability</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Roll an even number $A$</td>
+<td>$\{2, 4, 6\}$</td>
+<td>$P(A) = \frac{3}{6} = 0.5$</td>
+</tr>
+<tr>
+<td>Roll greater than 3 $B$</td>
+<td>$\{4, 5, 6\}$</td>
+<td>$P(B) = \frac{3}{6} = 0.5$</td>
+</tr>
+<tr>
+<td>$A \cap B$ (even <strong>and</strong> greater than 3)</td>
+<td>$\{4, 6\}$</td>
+<td>$P(A \cap B) = \frac{2}{6} \approx 0.33$</td>
+</tr>
+</tbody></table>
+<p><strong>Are A and B independent?</strong></p>
+<blockquote>
+<p>Check: $P(A)P(B) = 0.5 \times 0.5 = 0.25$, but $P(A \cap B) \approx 0.33$</p>
+<p>Since $P(A \cap B) \neq P(A)P(B)$, events $A$ and $B$ are <strong>not independent</strong>,
+ because knowing that the die rolled greater than 3 changes the probability of it being even (from $\frac{1}{2}$ to $\frac{2}{3}$)</p>
+</blockquote>
+
+  </main>
+  <footer>
+    &copy; DataLeaper
+  </footer>
+</body>
+</html>

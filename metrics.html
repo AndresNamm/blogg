@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classification Metrics</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false, strict: 'ignore'});"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      line-height: 1.7;
+      color: #333;
+    }
+    header {
+      padding: 20px 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    header a {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #111;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    header a:hover { color: #0066cc; }
+    main { min-height: 60vh; padding-bottom: 40px; }
+    h1 { margin-top: 0; font-size: 2rem; color: #111; }
+    h2 { font-size: 1.5rem; color: #222; margin-top: 2em; }
+    h3 { font-size: 1.25rem; color: #333; margin-top: 1.5em; }
+    a { color: #0066cc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    pre { background: #f5f5f5; padding: 15px; overflow-x: auto; border-radius: 6px; }
+    code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+    pre code { background: none; padding: 0; }
+    img { max-width: 100%; height: auto; border-radius: 4px; }
+    .post-list { list-style: none; padding: 0; }
+    .post-list li {
+      padding: 14px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .post-list li:last-child { border-bottom: none; }
+    .post-list a { font-size: 1.1rem; }
+    footer {
+      padding: 20px 0;
+      margin-top: 40px;
+      border-top: 1px solid #e0e0e0;
+      font-size: 0.85rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/">DataLeaper</a>
+  </header>
+  <main>
+    <h1>Classification Metrics</h1>
+<h2>Accuracy</h2>
+<p>Proportion of correct predictions:</p>
+<p>$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}$</p>
+<h2>Precision</h2>
+<p>Proportion of positive predictions that are correct:</p>
+<p>$\text{Precision} = \frac{TP}{TP + FP}$</p>
+<p>Answers: &quot;Of all predicted positives, how many are truly positive?&quot;</p>
+<h2>Recall (Sensitivity)</h2>
+<p>Proportion of actual positives correctly identified:</p>
+<p>$\text{Recall} = \frac{TP}{TP + FN}$</p>
+<p>Answers: &quot;Of all actual positives, how many did we find?&quot;</p>
+<h2>Notation</h2>
+<ul>
+<li>$TP$ = True Positives</li>
+<li>$TN$ = True Negatives</li>
+<li>$FP$ = False Positives</li>
+<li>$FN$ = False Negatives</li>
+</ul>
+<h2>Trade-off</h2>
+<p>High precision = fewer false alarms
+High recall = fewer missed cases
+Often inversely related.</p>
+
+  </main>
+  <footer>
+    &copy; DataLeaper
+  </footer>
+</body>
+</html>

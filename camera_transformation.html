@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Understanding Camera Coordinate Transformations</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false, strict: 'ignore'});"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      line-height: 1.7;
+      color: #333;
+    }
+    header {
+      padding: 20px 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    header a {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #111;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    header a:hover { color: #0066cc; }
+    main { min-height: 60vh; padding-bottom: 40px; }
+    h1 { margin-top: 0; font-size: 2rem; color: #111; }
+    h2 { font-size: 1.5rem; color: #222; margin-top: 2em; }
+    h3 { font-size: 1.25rem; color: #333; margin-top: 1.5em; }
+    a { color: #0066cc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    pre { background: #f5f5f5; padding: 15px; overflow-x: auto; border-radius: 6px; }
+    code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+    pre code { background: none; padding: 0; }
+    img { max-width: 100%; height: auto; border-radius: 4px; }
+    .post-list { list-style: none; padding: 0; }
+    .post-list li {
+      padding: 14px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .post-list li:last-child { border-bottom: none; }
+    .post-list a { font-size: 1.1rem; }
+    footer {
+      padding: 20px 0;
+      margin-top: 40px;
+      border-top: 1px solid #e0e0e0;
+      font-size: 0.85rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/">DataLeaper</a>
+  </header>
+  <main>
+    <h1>Understanding Camera Coordinate Transformations</h1>
+<p>In modern computer graphics and computer vision, it&#39;s essential to convert points from a global (world) coordinate system into a camera&#39;s local coordinate system.  This is accomplished by a combination of translation and rotation, conveniently packaged into a single  homogeneous transformation matrix.  In this post, we&#39;ll derive that matrix step by step and show how it acts on a point.</p>
+<h1>Table of Contents</h1>
+<ul>
+<li><a href="#understanding-camera-coordinate-transformations">Understanding Camera Coordinate Transformations</a></li>
+<li><a href="#table-of-contents">Table of Contents</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#1-the-problem-statement">1. The Problem Statement</a></li>
+<li><a href="#2-translating-the-origin">2. Translating the Origin</a></li>
+<li><a href="#3-rotating-into-camera-axes">3. Rotating into Camera Axes</a><ul>
+<li><a href="#why-this-works">Why this works?</a></li>
+</ul>
+</li>
+<li><a href="#4-the-combined-view-matrix">4. The Combined View Matrix</a></li>
+<li><a href="#5-conclusion">5. Conclusion</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+<h1>Glossary</h1>
+<ul>
+<li><strong>World Coordinate System</strong>: Global reference frame where all objects and the camera are initially defined.</li>
+<li><strong>Camera Coordinate System</strong>: Local reference frame centered at the camera&#39;s optical center with axes aligned to the camera&#39;s orientation.</li>
+<li><strong>Optical Center</strong>: The 3D position of the camera in world coordinates; the origin of the camera&#39;s local frame.</li>
+<li><strong>Homogeneous Coordinates</strong>: Extended coordinate system where a 3D point is represented as a 4D vector with an added dimension (typically 1), enabling matrix operations for both rotation (possible before) and <strong>translation</strong> (added).</li>
+<li><strong>Orthonormal Basis</strong>: A set of three perpendicular unit vectors that define the camera&#39;s orientation axes (u, v, w).</li>
+<li><strong>View Matrix</strong>: A single 4×4 transformation matrix that combines translation and rotation to convert world coordinates to camera coordinates.</li>
+<li><strong>Basis Change</strong>: The mathematical process of expressing a point&#39;s coordinates in a different coordinate system through projection onto the new basis vectors.</li>
+</ul>
+<p><img src="images/camera_transformation.png" alt=""></p>
+<h1>1. The Problem Statement</h1>
+<ul>
+<li><p>$P_{\text{global}} = \begin{pmatrix}x_g\\y_g\\z_g\end{pmatrix}$ are coordinates <strong>of a randomly picked point in the world frame.</strong></p>
+</li>
+<li><p>The <strong>camera&#39;s optical center</strong> has coordinates $C = \begin{pmatrix}x_c\\y_c\\z_c\end{pmatrix}$</p>
+</li>
+<li><p>The camera&#39;s orientation <strong>is given by an orthonormal basis of three unit vectors</strong> (in world coordinates):</p>
+</li>
+</ul>
+<p>$
+\mathbf u = \begin{pmatrix}u_x\\u_y\\u_z\end{pmatrix},\quad\mathbf v = \begin{pmatrix}v_x\\v_y\\v_z\end{pmatrix},\quad\mathbf w = \begin{pmatrix}w_x\\w_y\\w_z\end{pmatrix}
+$</p>
+<p>We want <strong>one</strong> matrix M  such that the homogeneous product produces  the point’s coordinates  in the camera’s local frame.</p>
+<p>$M \;\begin{pmatrix} P_{\text{global}} \\ 1 \end{pmatrix} = \begin{pmatrix} P_{\text{camera}} \\ 1 \end{pmatrix}$</p>
+<hr>
+<h1>2. Translating the Origin</h1>
+<p>First, we translate the world so that the camera center  goes to the origin. </p>
+<p>In homogeneous form, this is the  matrix </p>
+<p>$T =
+\begin{pmatrix}
+1 & 0 & 0 & -x_c \\
+0 & 1 & 0 & -y_c \\
+0 & 0 & 1 & -z_c \\
+0 & 0 & 0 &  1
+\end{pmatrix}$</p>
+<p>Applying $T$ to $P_{\text{global}}^h=\begin{pmatrix}x\\y\\z\\1\end{pmatrix}$  yields:</p>
+<p>$
+T\,\begin{pmatrix}x\\y\\z\\1\end{pmatrix}=\begin{pmatrix}x - x_c\\[4pt]y - y_c\\[4pt]z - z_c\\[4pt]1\end{pmatrix}
+$</p>
+<p><a href="https://blog.dataleaper.com/camera_transformation.html">VISUAL EXAMPLES OF TRANSLATIONS</a></p>
+<hr>
+<h1>3. Rotating into Camera Axes</h1>
+<p>Now the camera center is at the origin, but the axes are still aligned with the world. So next, we need to rotate the translated point so that the world axes align with the camera&#39;s axes .  The homogeneous rotation matrix for this is:</p>
+<p>$R_h =
+\begin{pmatrix}
+u_x & u_y & u_z & 0 \\
+v_x & v_y & v_z & 0 \\
+w_x & w_y & w_z & 0 \\
+0   & 0   & 0   & 1
+\end{pmatrix}$</p>
+<p>Multiplying by this matrix transforms the point into camera‐coordinate space:</p>
+<p>$
+R_h\begin{pmatrix}x - x_c \\[2pt]y - y_c \\[2pt]z - z_c \\[2pt]1\end{pmatrix}=\begin{pmatrix}\mathbf U \cdot (p_{\mathrm{global}} - c) \\[4pt]\mathbf V \cdot (p_{\mathrm{global}} - c) \\[4pt]\mathbf W \cdot (p_{\mathrm{global}} - c) \\[4pt]1\end{pmatrix}
+$</p>
+<p>Equivalently, the resulting coordinates are</p>
+<p>$
+\begin{aligned} x_{\mathrm{cam}} &= u_x(x - x_c) + u_y(y - y_c) + u_z(z - z_c),\\ y_{\mathrm{cam}} &= v_x(x - x_c) + v_y(y - y_c) + v_z(z - z_c),\\ z_{\mathrm{cam}} &= w_x(x - x_c) + w_y(y - y_c) + w_z(z - z_c).\end{aligned}
+$</p>
+<h2>Why this works?</h2>
+<p>With this process we are projecting essentially the positional vector for point P onto camera <strong>orthonormal basis vectors. Answering the question, how much the point p moves in the directions of camera defining vectors u, v, w</strong></p>
+<p>This is called a basis change and we are doing it through projection. Read more on this topic here: <a href="https://www.notion.so/Change-of-Basis-2442e1a674b3800b82f4fc146b37cdc7?pvs=21">Change of Basis</a> </p>
+<hr>
+<h1>4. The Combined View Matrix</h1>
+<p>Combining translation  then rotation  into one multiplication gives:</p>
+<p>$
+M = R_h \, T= \begin{pmatrix} u_x & u_y & u_z & -\,(u_x X_C + u_y Y_C + u_z Z_C) \\ v_x & v_y & v_z & -\,(v_x X_C + v_y Y_C + v_z Z_C) \\ w_x & w_y & w_z & -\,(w_x X_C + w_y Y_C + w_z Z_C) \\ 0   & 0   & 0   & 1\end{pmatrix}.
+$</p>
+<p>That single matrix now both recenters and reorients any world point into camera space.</p>
+<hr>
+<h1>5. Conclusion</h1>
+<p>In summary, to transform a world‐space point  into camera‐space:</p>
+<ol>
+<li><strong>Translate</strong> by so the camera is at the origin. </li>
+<li><strong>Rotate</strong> by to align with the camera axes.</li>
+</ol>
+<p>Pack those into the homogeneous &quot;view&quot; matrix:</p>
+<p>$
+M = \begin{pmatrix}R & -R\,C\\0\;0\;0 & 1\end{pmatrix},
+$</p>
+<p>and apply:</p>
+<p>$
+\begin{pmatrix}P_{\text{camera}}\\1\end{pmatrix}= M\,\begin{pmatrix}P_{\text{global}}\\1\end{pmatrix}.
+$</p>
+<p>With this matrix in hand, you have the foundation for projecting 3D scenes onto a 2D camera image, performing view frustum culling, and more advanced rendering and vision algorithms.  Happy coding!</p>
+<h1>References</h1>
+<ul>
+<li><a href="https://www.scratchapixel.com/lessons/3d-basic-rendering/computing-pixel-coordinates-of-3d-point/mathematics-computing-2d-coordinates-of-3d-points.html">Computing the Pixel coordinates of 3D point</a></li>
+</ul>
+
+  </main>
+  <footer>
+    &copy; DataLeaper
+  </footer>
+</body>
+</html>

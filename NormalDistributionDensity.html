@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Normal Distribution & Probability Density</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false, strict: 'ignore'});"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      line-height: 1.7;
+      color: #333;
+    }
+    header {
+      padding: 20px 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    header a {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #111;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    header a:hover { color: #0066cc; }
+    main { min-height: 60vh; padding-bottom: 40px; }
+    h1 { margin-top: 0; font-size: 2rem; color: #111; }
+    h2 { font-size: 1.5rem; color: #222; margin-top: 2em; }
+    h3 { font-size: 1.25rem; color: #333; margin-top: 1.5em; }
+    a { color: #0066cc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    pre { background: #f5f5f5; padding: 15px; overflow-x: auto; border-radius: 6px; }
+    code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+    pre code { background: none; padding: 0; }
+    img { max-width: 100%; height: auto; border-radius: 4px; }
+    .post-list { list-style: none; padding: 0; }
+    .post-list li {
+      padding: 14px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .post-list li:last-child { border-bottom: none; }
+    .post-list a { font-size: 1.1rem; }
+    footer {
+      padding: 20px 0;
+      margin-top: 40px;
+      border-top: 1px solid #e0e0e0;
+      font-size: 0.85rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/">DataLeaper</a>
+  </header>
+  <main>
+    <h1>Normal Distribution &amp; Probability Density</h1>
+<p><strong>Q: What does Density functions compute?</strong><br>The Normal (Gaussian) PDF: $f(x) = \frac{1}{\sigma\sqrt{2\pi}} \cdot e^{-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2}$<br>Returns the relative likelihood of a value given a distribution defined by <code>mean</code> (μ) and <code>std</code> (σ).</p>
+<hr>
+<p><strong>Q: If I integrate from -∞ to +∞, what happens?</strong><br>The result is exactly <strong>1</strong> — total probability over all outcomes = 100%. The $\frac{1}{\sigma\sqrt{2\pi}}$ constant exists precisely to ensure this.</p>
+<hr>
+<p><strong>Q: Shouldn&#39;t the density value at each point be 0?</strong><br>That&#39;s the probability of an exact point, yes — but density ≠ probability. Density is a <strong>relative score</strong> (like kg/m³). The probability of a <em>range</em> is obtained by integrating density over that range.</p>
+<hr>
+<hr>
+<p><strong>Q: So integration of density = probability?</strong><br>Yes: $P(a \leq X \leq b) = \int_a^b f(x)dx$</p>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Is this value anomalous?</td>
+<td>Compare density scores directly</td>
+</tr>
+<tr>
+<td>Probability of falling in a range</td>
+<td>Integrate density over that range</td>
+</tr>
+<tr>
+<td>Rank anomalous tenants</td>
+<td>Sort by density — lowest = most anomalous</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>Q: Why express probabilities via density at all?</strong><br>For continuous variables, assigning non-zero probability to every point is impossible — uncountably infinite points would sum to ∞. Density sidesteps this by answering <em>&quot;how likely is x relative to other values?&quot;</em> rather than assigning absolute probability to a point.</p>
+
+  </main>
+  <footer>
+    &copy; DataLeaper
+  </footer>
+</body>
+</html>
