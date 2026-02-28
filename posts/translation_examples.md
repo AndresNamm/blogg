@@ -1,8 +1,9 @@
+# Point Translation Examples
+
+
 Here we focus on only translation of point P from global origin G to camera origin G
 
 # 3D TRANSLATION
-
-
 
 ![](images/ex1.png)
 
