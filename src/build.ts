@@ -27,9 +27,72 @@ function getAllMarkdownFiles(): string[] {
     .map(file => path.join(postsDir, file));
 }
 
+function preserveMathSegments(markdown: string): { masked: string; segments: string[] } {
+  const segments: string[] = [];
+  let masked = '';
+  let i = 0;
+
+  while (i < markdown.length) {
+    const ch = markdown[i];
+    const prev = i > 0 ? markdown[i - 1] : '';
+
+    if (ch === '$' && prev !== '\\') {
+      const isDisplay = markdown[i + 1] === '$';
+      const delim = isDisplay ? '$$' : '$';
+      const start = i;
+      i += delim.length;
+
+      let end = -1;
+      while (i < markdown.length) {
+        const curr = markdown[i];
+        const currPrev = i > 0 ? markdown[i - 1] : '';
+
+        if (curr === '$' && currPrev !== '\\') {
+          if (isDisplay && markdown[i + 1] === '$') {
+            end = i + 2;
+            break;
+          }
+          if (!isDisplay) {
+            end = i + 1;
+            break;
+          }
+        }
+        i++;
+      }
+
+      if (end !== -1) {
+        const segment = markdown.slice(start, end);
+        const token = `@@MATH_SEGMENT_${segments.length}@@`;
+        segments.push(segment);
+        masked += token;
+        i = end;
+        continue;
+      }
+
+      i = start;
+    }
+
+    masked += ch;
+    i++;
+  }
+
+  return { masked, segments };
+}
+
+function restoreMathSegments(html: string, segments: string[]): string {
+  let restored = html;
+  for (let i = 0; i < segments.length; i++) {
+    const token = `@@MATH_SEGMENT_${i}@@`;
+    restored = restored.split(token).join(segments[i]);
+  }
+  return restored;
+}
+
 async function convertMarkdownToHtml(mdPath: string) {
   const mdContent = fs.readFileSync(mdPath, 'utf-8');
-  const htmlContent = await marked(mdContent);
+  const { masked, segments } = preserveMathSegments(mdContent);
+  const parsed = await marked(masked);
+  const htmlContent = restoreMathSegments(parsed, segments);
   const template = readTemplate();
   const fileName = path.basename(mdPath, '.md');
   const title = extractTitle(mdPath);

@@ -74,7 +74,7 @@ $$
 T\,\begin{pmatrix}x\\y\\z\\1\end{pmatrix}=\begin{pmatrix}x - x_c\\[4pt]y - y_c\\[4pt]z - z_c\\[4pt]1\end{pmatrix}
 $$
 
-[VISUAL EXAMPLES OF TRANSLATIONS](translation_examples.md)
+[VISUAL EXAMPLES OF TRANSLATIONS](https://blog.dataleaper.com/camera_transformation.html)
 
 ---
 
