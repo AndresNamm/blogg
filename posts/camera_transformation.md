@@ -25,7 +25,7 @@ In modern computer graphics and computer vision, it's essential to convert point
 
 - **World Coordinate System**: Global reference frame where all objects and the camera are initially defined.
 - **Camera Coordinate System**: Local reference frame centered at the camera's optical center with axes aligned to the camera's orientation.
-- **Optical Center**: The 3D position of the camera in world coordinates; the origin of the camera's local frame.
+- **Optical Center**: The 3D position of the camera in world coordinates; the origin of the camera's local frame (0,0,0) from Camera Coordinate System perspective
 - **Homogeneous Coordinates**: Extended coordinate system where a 3D point is represented as a 4D vector with an added dimension (typically 1), enabling matrix operations for both rotation (possible before) and **translation** (added).
 - **Orthonormal Basis**: A set of three perpendicular unit vectors that define the camera's orientation axes (u, v, w).
 - **View Matrix**: A single 4×4 transformation matrix that combines translation and rotation to convert world coordinates to camera coordinates.
@@ -74,7 +74,7 @@ $$
 T\,\begin{pmatrix}x\\y\\z\\1\end{pmatrix}=\begin{pmatrix}x - x_c\\[4pt]y - y_c\\[4pt]z - z_c\\[4pt]1\end{pmatrix}
 $$
 
-[VISUAL EXAMPLES OF TRANSLATIONS](https://blog.dataleaper.com/translation_examples.html)
+[VISUAL EXAMPLES OF TRANSLATIONS](translation_examples.md)
 
 ---
 

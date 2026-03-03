@@ -110,6 +110,38 @@ function restoreMathSegments(html: string, segments: string[]): string {
   return restored;
 }
 
+function normalizeMarkdownLink(href: string): string {
+  if (!href) {
+    return href;
+  }
+
+  if (
+    href.startsWith('#') ||
+    href.startsWith('http://') ||
+    href.startsWith('https://') ||
+    href.startsWith('mailto:') ||
+    href.startsWith('tel:')
+  ) {
+    return href;
+  }
+
+  const [pathPart, hash = ''] = href.split('#');
+  const [cleanPath, query = ''] = pathPart.split('?');
+  const normalizedPath = cleanPath.replace(/\\/g, '/');
+
+  if (!normalizedPath.toLowerCase().endsWith('.md')) {
+    return href;
+  }
+
+  const withoutPostsPrefix = normalizedPath.replace(/^\.?\/?posts\//i, '');
+  const fileName = path.basename(withoutPostsPrefix, '.md');
+  const target = `${fileName}.html`;
+  const querySuffix = query ? `?${query}` : '';
+  const hashSuffix = hash ? `#${hash}` : '';
+
+  return `${target}${querySuffix}${hashSuffix}`;
+}
+
 async function convertMarkdownToHtml(mdPath: string) {
   const mdContent = fs.readFileSync(mdPath, 'utf-8');
   const { masked, segments } = preserveMathSegments(mdContent);
@@ -124,6 +156,11 @@ async function convertMarkdownToHtml(mdPath: string) {
         headingSlugCounts.set(baseSlug, seen + 1);
         const slug = seen === 0 ? baseSlug : `${baseSlug}-${seen}`;
         return `<h${level} id="${slug}">${text}</h${level}>\n`;
+      },
+      link(href: string, title: string | null | undefined, text: string): string {
+        const safeHref = href ? normalizeMarkdownLink(href) : '';
+        const titleAttr = title ? ` title="${title}"` : '';
+        return `<a href="${safeHref}"${titleAttr}>${text}</a>`;
       }
     }
   });
