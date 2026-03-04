@@ -14,7 +14,7 @@ A surprising fact is that the name “right hand coordinate system” comes from
 ![](images/hand2.png)
 ![](images/right.png)
 
-## Example on with camera perspective
+## Example with camera perspective
 
 ![](images/hand1.png)
 
