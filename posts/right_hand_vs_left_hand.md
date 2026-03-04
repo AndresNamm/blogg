@@ -1,11 +1,11 @@
-# Coordinate System Handedness
+# Left- vs. Right-Handed Coordinate Systems
 
-Let's clarify a potential source of confusion. Coordinate system handedness. In my perspective its easiest explained by what direction Z points to relative to x and y. 
+Let's clarify a potential source of confusion. Left- vs. Right-Handed Coordinate Systems. In my perspective its easiest explained by what direction Z points to relative to x and y. 
 
 ![](images/chart.png)
 
 
-- [Coordinate System Handedness](#coordinate-system-handedness)
+- [Left- vs. Right-Handed Coordinate Systems](#left--vs-right-handed-coordinate-systems)
 - [Right Handed Coordinate System](#right-handed-coordinate-system)
   - [Example with camera perspective](#example-with-camera-perspective)
 - [Left Handed Coordinate System](#left-handed-coordinate-system)
