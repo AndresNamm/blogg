@@ -36,7 +36,7 @@ This question often sparks debate because **“up”** depends on the applicatio
     - The ground plane is the X–Y plane, and positive Z points upward.
     - Example: In a Z-up setup, an aerial drone’s altitude is its Z coordinate.
 
-## Example 1 Left hand coordinate system with CloudCompare
+## Example 1 Left hand coordinate system with CloudCompare where Z is up
 
 ![](images/hand4.png)
 
