@@ -5,6 +5,15 @@ Let's clarify a potential source of confusion. Coordinate system handedness. In 
 ![](images/chart.png)
 
 
+- [Coordinate System Handedness](#coordinate-system-handedness)
+- [Right Handed Coordinate System](#right-handed-coordinate-system)
+  - [Example with camera perspective](#example-with-camera-perspective)
+- [Left Handed Coordinate System](#left-handed-coordinate-system)
+- [Is Y or Z up direction?](#is-y-or-z-up-direction)
+  - [Example 1 Left hand coordinate system with CloudCompare where Z is up](#example-1-left-hand-coordinate-system-with-cloudcompare-where-z-is-up)
+- [References](#references)
+
+
 # Right Handed Coordinate System
 
 
