@@ -10,12 +10,12 @@ Have you ever wondered how we represent 3D objects on a 2D screen? One of the wa
 - [Step 1: From a World of Points to a Camera's View](#step-1-from-a-world-of-points-to-a-cameras-view)
 - [Step 2: Flattening the World: Projecting to 2D](#step-2-flattening-the-world-projecting-to-2d)
 - [Deeper Dive Into Step 2](#deeper-dive-into-step-2)
-  - [**1. Defining the View Volume**](#1-defining-the-view-volume)
-  - [**2. Target Space – The NDC Cube**](#2-target-space--the-ndc-cube)
-  - [**3. The Orthographic Projection Transformation**](#3-the-orthographic-projection-transformation)
-  - [**4. Orthographic Projection Matrix**](#4-orthographic-projection-matrix)
-  - [**5. How It Works – Example for X Coordinates**](#5-how-it-works--example-for-x-coordinates)
-  - [✅ **Key Points**](#-key-points)
+  - [1. Defining the View Volume](#1-defining-the-view-volume)
+  - [2. Target Space – The NDC Cube](#2-target-space--the-ndc-cube)
+  - [3. The Orthographic Projection Transformation](#3-the-orthographic-projection-transformation)
+  - [4. Orthographic Projection Matrix](#4-orthographic-projection-matrix)
+  - [5. How It Works – Example for X Coordinates](#5-how-it-works--example-for-x-coordinates)
+  - [✅ Key Points](#-key-points)
   - [Putting It All Together](#putting-it-all-together)
 - [References](#references)
 
@@ -98,15 +98,38 @@ $$
 
 ## 5. How It Works – Example for X Coordinates
 
-The **first row** of the matrix performs a standard linear remapping from the range
+The **first row** of the matrix performs a standard linear remapping from the range $[l, r]$ to $[-1, 1]$.
 
-- [l,r][ to [−1,1]:
+That sentence sounds more complicated than it is. It just means this:
+
+- A point on the **left** side of the view box, $x = l$, should become $-1$.
+- A point on the **right** side of the view box, $x = r$, should become $1$.
+- A point exactly in the **middle** between $l$ and $r$ should become $0$.
+
+So we want a formula that takes the old x-coordinate and gives us a new x-coordinate in the normalized range used by the GPU:
 
 $$
 x_{\text{new}} =
 \left( \frac{2}{r-l} \right) x_{\text{old}}
-- \left( \frac{r+l}{r-l} \right)  
+- \left( \frac{r+l}{r-l} \right)
 $$
+
+This formula does two simple operations:
+
+1. **Scale** the x-values by $\frac{2}{r-l}$.
+2. **Shift** them by $-\frac{r+l}{r-l}$.
+
+Why those two parts?
+
+- **Scale part:** the original interval has width $r-l$, while the target interval $[-1,1]$ has width $2$. So the factor $\frac{2}{r-l}$ rescales the old interval to the correct width.
+- **Shift part:** after scaling, the numbers are still not in the right place. The term $-\frac{r+l}{r-l}$ slides the whole interval left or right so its middle ends up at $0$.
+  - More abstractly: the midpoint of the original interval $[l,r]$ is $\frac{l+r}{2}$. After scaling by $\frac{2}{r-l}$, that midpoint becomes
+
+$$
+\left( \frac{2}{r-l} \right) \frac{l+r}{2} = \frac{r+l}{r-l}
+$$
+
+  Since we want the final midpoint to be $0$, we must subtract exactly that value. That is why the shift term is $-\frac{r+l}{r-l}$: it cancels the scaled midpoint and centers the interval at the origin.
 
 
 Similarly:
@@ -140,5 +163,5 @@ The resulting Pclip coordinates are almost final. The hardware then performs two
 
 # References
 
-1. https://www.youtube.com/watch?app=desktop&v=NaclfcHReXk&ab_channel=3DComputerGraphics%3AMathIntrow%2FOpenGL
-2. [**Understanding Camera Coordinate Transformations**](https://www.notion.so/Understanding-Camera-Coordinate-Transformations-2442e1a674b3809386c3ea125e65a9d7?pvs=21)
+1. [YT video about orto projections](https://www.youtube.com/watch?app=desktop&v=NaclfcHReXk&ab_channel=3DComputerGraphics%3AMathIntrow%2FOpenGL)
+2. [Understanding Camera Coordinate Transformations](https://www.notion.so/Understanding-Camera-Coordinate-Transformations-2442e1a674b3809386c3ea125e65a9d7?pvs=21)
