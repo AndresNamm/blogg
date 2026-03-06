@@ -1,10 +1,24 @@
-## What is Orthographic Projection? 📸
+# Orthographic Projection? 📸
 
 Have you ever wondered how we represent 3D objects on a 2D screen? One of the ways to do this is through **orthographic projection**. In simple terms, orthographic projection is a way of drawing a 3D object in 2D that preserves the object's proportions, no matter how near or far it is. This is different from perspective projection, which makes objects appear smaller as they get farther away. This is particularly useful in technical drawings, such as architectural plans or engineering designs, where it's important to maintain the exact measurements of the object.
 
 ![](images/orto.png)
 
 ---
+
+- [Orthographic Projection? 📸](#orthographic-projection-)
+- [Step 1: From a World of Points to a Camera's View](#step-1-from-a-world-of-points-to-a-cameras-view)
+- [Step 2: Flattening the World: Projecting to 2D](#step-2-flattening-the-world-projecting-to-2d)
+- [Deeper Dive Into Step 2](#deeper-dive-into-step-2)
+  - [**1. Defining the View Volume**](#1-defining-the-view-volume)
+  - [**2. Target Space – The NDC Cube**](#2-target-space--the-ndc-cube)
+  - [**3. The Orthographic Projection Transformation**](#3-the-orthographic-projection-transformation)
+  - [**4. Orthographic Projection Matrix**](#4-orthographic-projection-matrix)
+  - [**5. How It Works – Example for X Coordinates**](#5-how-it-works--example-for-x-coordinates)
+  - [✅ **Key Points**](#-key-points)
+  - [Putting It All Together](#putting-it-all-together)
+- [References](#references)
+
 
 # Step 1: From a World of Points to a Camera's View 
 
@@ -26,7 +40,7 @@ The projection itself is quite simple: we just discard the depth information (th
 
 # Deeper Dive Into Step 2
 
-## **1. Defining the View Volume**
+## 1. Defining the View Volume
 
 In orthographic projection, the camera’s **view volume** is a rectangular box in **camera space** defined by six clipping planes:
 
@@ -43,7 +57,7 @@ In a **right-handed coordinate system** like OpenGL, the camera looks down the *
 
 ---
 
-## **2. Target Space – The NDC Cube**
+## 2. Target Space – The NDC Cube
 
 Graphics hardware works with a standard shape called the **Normalized Device Coordinates (NDC) cube**:
 
@@ -55,7 +69,7 @@ Our goal: **Map every point from the camera’s view volume into this cube** so 
 
 ---
 
-## **3. The Orthographic Projection Transformation**
+## 3. The Orthographic Projection Transformation
 
 The orthographic projection step does **two things**:
 
@@ -66,7 +80,7 @@ These two steps can be combined into **one matrix multiplication**.
 
 ---
 
-## **4. Orthographic Projection Matrix**
+## 4. Orthographic Projection Matrix
 
 For a right-handed coordinate system (OpenGL convention), the orthographic projection matrix is:
 
@@ -82,7 +96,7 @@ $$
 
 ---
 
-## **5. How It Works – Example for X Coordinates**
+## 5. How It Works – Example for X Coordinates
 
 The **first row** of the matrix performs a standard linear remapping from the range
 
@@ -102,7 +116,7 @@ Similarly:
 
 ---
 
-## ✅ **Key Points**
+## ✅ Key Points
 
 - Start with **camera space** coordinates.
 - Define the **view volume** using l,r,b,t,n,fl, r, b, t, n, fl,r,b,t,n,f.
