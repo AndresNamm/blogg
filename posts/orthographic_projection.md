@@ -1,6 +1,6 @@
 ## What is Orthographic Projection? 📸
 
-Have you ever wondered how we represent 3D objects on a 2D screen? One of the ways to do this is through **orthographic projection**. In simple terms, orthographic projection is a way of drawing a 3D object in 2D that preserves the object's proportions, no matter how near or far it is. This is different from perspective projection, which makes objects appear smaller as they get farther away. Think of it as looking at an object from an infinite distance, so that all the lines of sight are parallel. This is particularly useful in technical drawings, such as architectural plans or engineering designs, where it's important to maintain the exact measurements of the object.
+Have you ever wondered how we represent 3D objects on a 2D screen? One of the ways to do this is through **orthographic projection**. In simple terms, orthographic projection is a way of drawing a 3D object in 2D that preserves the object's proportions, no matter how near or far it is. This is different from perspective projection, which makes objects appear smaller as they get farther away. This is particularly useful in technical drawings, such as architectural plans or engineering designs, where it's important to maintain the exact measurements of the object.
 
 ![](images/orto.png)
 
@@ -8,8 +8,7 @@ Have you ever wondered how we represent 3D objects on a 2D screen? One of the wa
 
 # Step 1: From a World of Points to a Camera's View 
 
-
-Imagine you have a 3D model of a car in a virtual world. This car is defined by a set of points in a "world" coordinate system. This is a global reference frame for everything in your scene. But to see this car, you need a camera. The camera has its own coordinate system, with its own origin and axes.
+Before doing projection to a plane, we have points in 3D world. We can assume these are defined on some global coordinate system with its own origin and axes. This is a global reference frame for everything in your scene. But to see this car, you need a camera. The camera has its own coordinate system, with its own origin and axes.
 
 ![](images/orto2.png)
 
@@ -20,9 +19,10 @@ Read more details about this in another article [Transforming To Global Coordina
 ---
 
 # Step 2: Flattening the World: Projecting to 2D 
-Now that our car is positioned correctly in front of the camera, we need to project it onto a 2D plane. In orthographic projection, this is like taking a rectangular box (a "view volume" or "frustum") and mapping everything inside it to a 2D screen. Anything outside this box is "clipped" and won't be visible.
 
-The projection itself is quite simple: we just discard the depth information (the Z-coordinate) of each point. However, to make things work with modern graphics pipelines, we use a special "orthographic projection matrix". This matrix not only gets rid of the depth but also scales and translates the X and Y coordinates to fit within a standard cube, usually from -1 to 1 on each axis. This normalized representation is what eventually gets mapped to the pixels on your screen, giving you the final 2D image of your 3D car.
+Now that our car is positioned correctly in front of the camera, we need to project it onto a 2D plane. In orthographic projection, this is like taking a rectangular box and mapping everything inside it to a 2D screen. Anything outside this box is "clipped" and won't be visible.
+
+The projection itself is quite simple: we just discard the depth information (the Z-coordinate) of each point. However, to make things work with modern graphics pipelines, we use a special "orthographic projection matrix". This matrix not only gets rid of the depth but also scales and translates the X and Y coordinates to fit within a standard cube, usually from -1 to 1 on each axis. This normalized representation is what eventually gets mapped to the pixels on your screen, giving you the final 2D image of the object. 
 
 # Deeper Dive Into Step 2
 
@@ -39,7 +39,7 @@ In orthographic projection, the camera’s **view volume** is a rectangular box 
 
 All distances are measured from the camera’s origin.
 
-In a **right-handed coordinate system** like OpenGL, the camera looks down the **−Z axis**. Read more about coordinate system handedness [here]()
+In a **right-handed coordinate system** like OpenGL, the camera looks down the **−Z axis**. Read more about coordinate system handedness [here](right_hand_vs_left_hand.md)
 
 ---
 
@@ -59,8 +59,8 @@ Our goal: **Map every point from the camera’s view volume into this cube** so 
 
 The orthographic projection step does **two things**:
 
-1. **Translate** the view volume so that its center is at the origin.
-2. **Scale** the volume so that it fits exactly inside the [−1,1][-1, 1][−1,1] cube.
+1. **Translate** the view volume points so that its center is at the origin.
+2. **Scale** the volume points so that it fits exactly inside the `[−1,1][-1,1][−1,1]` cube.
 
 These two steps can be combined into **one matrix multiplication**.
 
@@ -94,12 +94,6 @@ x_{\text{new}} =
 - \left( \frac{r+l}{r-l} \right)  
 $$
 
-```latex
-x_{\text{new}} =
-\left( \frac{2}{r-l} \right) x_{\text{old}}
-- \left( \frac{r+l}{r-l} \right)
-
-```
 
 Similarly:
 
@@ -112,7 +106,7 @@ Similarly:
 
 - Start with **camera space** coordinates.
 - Define the **view volume** using l,r,b,t,n,fl, r, b, t, n, fl,r,b,t,n,f.
-- Apply **MorthoM_{\text{ortho}}Mortho** to normalize into NDC space.
+- Apply $M_{\text{ortho}}$ to normalize into NDC space.
 - NDC space makes clipping and rendering much simpler for the GPU.
 
 ---
