@@ -9,7 +9,7 @@ Understanding 3D coordinate systems is essential for computer graphics, robotics
   - [Start With Three Axes](#start-with-three-axes)
   - [Right-Handed Coordinate System](#right-handed-coordinate-system)
   - [Left-Handed Coordinate System](#left-handed-coordinate-system)
-  - [Y-Up and Z-Up Are Separate Choices](#y-up-and-z-up-are-separate-choices)
+  - [Confusion point](#confusion-point)
   - [Why One Axis Cannot Determine Handedness](#why-one-axis-cannot-determine-handedness)
     - [Practical Implications in Code](#practical-implications-in-code)
   - [Notes About Image Space](#notes-about-image-space)
@@ -55,13 +55,13 @@ One common left-handed camera basis is:
 
 - `x` right
 - `y` up
-- `z` forward
+- `z` forward relative to the xy panel
 
 Compared with the previous example, the axis labels look similar, but the orientation of the Z axis is different.
 
-## Y-Up and Z-Up Are Separate Choices
 
-**Confusion point**
+
+## Confusion point
 
 
 Above example shows y up but both left-handed and right-handed systems can be:
@@ -72,8 +72,7 @@ Above example shows y up but both left-handed and right-handed systems can be:
 For example CloudCompare could have z up 
 
 ![](images/hand4.png)
-
-
+3
 
  `z`-up is common in CAD, GIS, Blender by default, and CloudCompare, - `y`-up is common in some graphics pipelines and modeling tools
 
