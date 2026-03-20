@@ -38,7 +38,7 @@ One common right-handed camera basis is:
 
 - `x` right
 - `y` up
-- `-z` forward
+- `-z` in front of camera
 
 This is the convention many people first meet in OpenGL-style view space.
 
