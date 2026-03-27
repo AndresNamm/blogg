@@ -106,7 +106,7 @@ That sentence sounds more complicated than it is. It just means this:
 - A point on the **right** side of the view box, $x = r$, should become $1$.
 - A point exactly in the **middle** between $l$ and $r$ should become $0$.
 
-So we want a formula that takes the old x-coordinate and gives us a new x-coordinate in the normalized range used by the GPU:
+So we want a formula that takes the old x-coordinate and gives us a new x-coordinate in the normalized range
 
 $$
 x_{\text{new}} =
@@ -144,8 +144,8 @@ Similarly:
 - Start with **camera space** coordinates.
 - Define the **view volume** using l,r,b,t,n,fl, r, b, t, n, fl,r,b,t,n,f.
 - Apply $M_{\text{ortho}}$ to normalize into NDC space.
-- NDC space makes clipping and rendering much simpler for the GPU.
-
+  - NDC space makes clipping and rendering much simpler for the GPU.
+  - NDC space also eases the general logic to more common ground
 ---
 
 ## Putting It All Together
