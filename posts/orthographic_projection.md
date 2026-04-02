@@ -2,6 +2,12 @@
 
 Have you ever wondered how we represent 3D objects on a 2D screen? One of the ways to do this is through **orthographic projection**. In simple terms, orthographic projection is a way of drawing a 3D object in 2D that preserves the object's proportions, no matter how near or far it is. This is different from perspective projection, which makes objects appear smaller as they get farther away. This is particularly useful in technical drawings, such as architectural plans or engineering designs, where it's important to maintain the exact measurements of the object.
 
+This is **Part 2** of a 3-part series:
+
+1. [Understanding Camera Coordinate Transformations](camera_transformation.md)
+2. [Orthographic Projection? 📸](orthographic_projection.md)
+3. [Viewport Transform for Orthographic LiDAR Projection](viewport_transform.md)
+
 ![](images/orto.png)
 
 ---
@@ -160,6 +166,10 @@ The resulting Pclip coordinates are almost final. The hardware then performs two
 
 1. **Clipping**: Any vertex with an x, y, or z coordinate outside the [-1, 1] range is discarded.
 2. **Viewport Transform**: The surviving NDC coordinates are mapped to the pixel coordinates of your window or screen. For example, an x-coordinate of -1 becomes the left edge of the screen, and +1 becomes the right edge.
+
+The viewport transform is the next step in this series, covered in [Viewport Transform for Orthographic LiDAR Projection](viewport_transform.md).
+
+This post builds directly on [Understanding Camera Coordinate Transformations](camera_transformation.md), which is Part 1 of the series.
 
 # References
 
