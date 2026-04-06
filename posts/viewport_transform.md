@@ -192,7 +192,13 @@ If two point indices are selected, the workflow can compute:
 - 2D distance in the camera xy plane,
 - 2D distance in pixel coordinates.
 
-For the pixel-space measurement, the same viewport equations are reused:
+For the pixel-space measurement, think of it as a three-step chain:
+
+1. map each selected 3D point into its 2D pixel position,
+2. compute the horizontal and vertical pixel offsets,
+3. combine those offsets with Euclidean distance.
+
+Step 1 reuses the same viewport equations:
 
 $$
 u_i = \left(x_{\text{ndc},i} + 1\right)\cdot 0.5 \cdot W
@@ -200,11 +206,19 @@ u_i = \left(x_{\text{ndc},i} + 1\right)\cdot 0.5 \cdot W
 v_i = \left(y_{\text{ndc},i} + 1\right)\cdot 0.5 \cdot H
 $$
 
-Then the pixel distance is:
+Step 2 computes the pixel offsets:
+
+$$
+\Delta u = u_2-u_1
+,\quad
+\Delta v = v_2-v_1
+$$
+
+Step 3 gives the pixel distance:
 
 $$
 d_{\text{pixel}} =
-\sqrt{(u_2-u_1)^2 + (v_2-v_1)^2}
+\sqrt{(\Delta u)^2 + (\Delta v)^2}
 $$
 
 Finally, that pixel distance can be converted back into scene units by using:
@@ -215,6 +229,27 @@ $$
 
 $$
 \text{pixel height in scene units} = \frac{\text{scene height}}{H}
+$$
+
+These two ratios are scale factors:
+
+- $\frac{\text{scene width}}{W}$ tells how many scene units one pixel represents in the horizontal direction,
+- $\frac{\text{scene height}}{H}$ tells how many scene units one pixel represents in the vertical direction.
+
+So if you already computed pixel offsets $(\Delta u, \Delta v)$, their scene-space offsets are
+
+$$
+\Delta x_{\text{scene}} = \Delta u\cdot\frac{\text{scene width}}{W}
+,\quad
+\Delta y_{\text{scene}} = \Delta v\cdot\frac{\text{scene height}}{H}
+$$
+
+and the corresponding 2D scene-plane distance is
+
+$$
+d_{\text{scene,2D}}=
+\sqrt{\left(\Delta u\cdot\frac{\text{scene width}}{W}\right)^2+
+\left(\Delta v\cdot\frac{\text{scene height}}{H}\right)^2}
 $$
 
 So the viewport transform is not only a rendering step. It becomes the bridge between the projected image and real measurements.
