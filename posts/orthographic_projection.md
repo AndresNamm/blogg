@@ -2,11 +2,12 @@
 
 Have you ever wondered how we represent 3D objects on a 2D screen? One of the ways to do this is through **orthographic projection**. In simple terms, orthographic projection is a way of drawing a 3D object in 2D that preserves the object's proportions, no matter how near or far it is. This is different from perspective projection, which makes objects appear smaller as they get farther away. This is particularly useful in technical drawings, such as architectural plans or engineering designs, where it's important to maintain the exact measurements of the object.
 
-This is **Part 2** of a 3-part series:
+This is **Part 2** of a 4-part series:
 
 1. [Understanding Camera Coordinate Transformations](camera_transformation.md)
 2. [Orthographic Projection? 📸](orthographic_projection.md)
 3. [Viewport Transform for Orthographic LiDAR Projection](viewport_transform.md)
+4. [Perspective Projection](perspective_projection.md)
 
 ![](images/orto.png)
 
