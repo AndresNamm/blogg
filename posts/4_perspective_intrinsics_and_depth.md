@@ -1,4 +1,4 @@
-# Perspective Projection, Intrinsics, and Depth
+p# Perspective Projection, Intrinsics, and Depth
 
 In the orthographic projection posts, the useful simplification was this:
 
@@ -8,9 +8,14 @@ That is why orthographic projection is easier for measurement. Once we know the 
 
 Perspective projection breaks this assumption.
 
-In perspective projection, a pixel is not a fixed-size square in the world. A pixel is more like a small direction coming out of the camera. Close to the camera, that direction covers a small physical area. Far away, the same direction covers a larger physical area.
+In perspective projection, a pixel is not a fixed-size square in the world. A pixel is more like a small direction coming out of the camera. Close to the camera, that direction covers a small physical area. Far away, the same direction covers a larger physical area. This is exactly how regular photography works. 
 
-This is why the `TimberArea` project combines two things:
+Parallel train tracks ![alt text](/images/train.png)
+
+This is also how our eyesight works. In real world its impossible to directly obtain orthographic projection. Its only possible in cases where you already have the point cloud availble.
+
+
+This is why an RGB-D measurement pipeline becomes important in real world. It combines 
 
 1. camera intrinsics,
 2. depth data.
@@ -36,7 +41,7 @@ f_x & 0 & c_x \\
 \end{pmatrix}
 $$
 
-In `TimberArea/test.py`, the matrix is:
+For example, a calibrated camera might have this intrinsic matrix:
 
 ```python
 m = np.array([
@@ -88,7 +93,7 @@ For example, if an image is roughly `4032 x 3024`, then the image center is:
 (2016, 1512)
 ```
 
-The `TimberArea` principal point is:
+This example principal point is:
 
 ```text
 (2011.17, 1514.9209)
@@ -133,9 +138,14 @@ That sounds strange at first because focal length is often described in millimet
 
 In the ideal pinhole camera model, focal length means the forward distance from the pinhole to the image plane.
 
-## What focal length really does? 
+![alt text](images/pinhole.png)
 
-- `fx` is the horizontal version. It tells us how much moving left or right in the image changes the left-right viewing angle.r`fy` is the vertical version. It tells us how much moving up or down in the image changes the up-down viewing angle.
+
+
+## What focal length really does
+
+- `fx` is the horizontal version. It tells us how much moving left or right in the image changes the left-right viewing angle.
+- `fy` is the vertical version. It tells us how much moving up or down in the image changes the up-down viewing angle.
 
 Large `fx` means:
 
@@ -155,25 +165,25 @@ That is like a wide-angle camera.
 
 The same applies to `fy`, but vertically.
 
-In `TimberArea`, `fx` and `fy` are equal:
+In this example, `fx` and `fy` are equal:
 
 ```text
 fx = fy = 3003.1174
 ```
 
-That means the code assumes the camera has the same scaling horizontally and vertically. In practical terms, square pixels and symmetric focal scaling.
+That means this example assumes the camera has the same scaling horizontally and vertically. In practical terms, square pixels and symmetric focal scaling. This is commonly assumed.
 
 ---
 
 # 4. Pixel to Ray
 
-Now we can understand this line from `TimberArea/read_png.py`:
+
+In practical terms, a ray is built like this
 
 ```python
 ray_center = np.array([x - cx, y - cy, fx])
 ```
 
-This builds a direction vector for the pixel.
 
 The components mean:
 
@@ -215,7 +225,65 @@ That ray points forward and slightly right.
 
 So the intrinsic matrix lets us turn a pixel coordinate into a camera ray.
 
-This is the first half of the `TimberArea` trick.
+This is the first half of the perspective-measurement trick.
+
+The important mental picture is the pinhole camera model:
+
+```text
+scene
+    ^
+    |
+ray direction
+    ^
+    |
+virtual image plane
+    ^
+    |
+camera center / pinhole
+```
+
+The real camera sensor is physically behind the pinhole, but the virtual image plane is usually drawn in front of the camera center, between the pinhole and the scene. This avoids flipping the image and makes the geometry easier to reason about.
+
+On that virtual image plane, a pixel is described by something like:
+
+```text
+[x - cx, y - cy, f]
+```
+
+or, in the simplified form:
+
+```text
+[x, y, f]
+```
+
+Those coordinates do not say where the object is in 3D. They say which direction the camera is looking for that pixel.
+
+After normalization:
+
+```text
+d = normalize([x - cx, y - cy, f])
+```
+
+we get a unit ray direction `d` from the camera center.
+
+So one RGB pixel really means:
+
+```text
+the object is somewhere along this ray
+```
+
+not:
+
+```text
+the object is exactly here
+```
+
+A normal RGB image gives color at each pixel, but it does not give the depth of the visible surface. One pixel therefore corresponds to infinitely many possible 3D points along the same ray:
+
+```text
+camera center ---------------------------->
+                                 many possible depths
+```
 
 ---
 
@@ -244,15 +312,42 @@ pixel + intrinsics -> ray direction
 ray direction + depth -> real metric point / size
 ```
 
-This is why LiDAR matters. In a normal RGB image, we see the pixel, but we do not directly know how far away the object is. With LiDAR/depth, we get that missing distance.
+This is why LiDAR matters. In a normal RGB image, we see the pixel, but we do not directly know how far away the object is. With LiDAR/depth, we get that missing scalar.
+
+If:
+
+```text
+C = camera center
+d = ray direction
+z = depth
+p = actual 3D point
+```
+
+then the reconstruction idea is:
+
+```text
+p = C + z d
+```
+
+This equation is the heart of RGB-D reconstruction, point clouds, SLAM, NeRF ray sampling, photogrammetry, and the LiDAR-to-RGB-to-segmentation-to-backprojection workflow.
+
+The workflow is elegant because each space does what it is good at:
+
+```text
+2D RGB image space -> segmentation works well
+3D LiDAR space     -> geometry and measurement work well
+rays + depth       -> bridge between them
+```
+
+So the pipeline can project LiDAR into the RGB image, segment the object in 2D, and then backproject the selected pixels into 3D using the depth values.
 
 ---
 
 # 6. Why One Pixel Has a Physical Size
 
-`TimberArea` does not only need the 3D position of one pixel. It needs area.
+For area measurement, we do not only need the 3D position of one pixel. We need area.
 
-So it asks:
+So the question becomes:
 
 > At this depth, how much real-world width and height does one image pixel cover?
 
@@ -332,7 +427,7 @@ The depth scales that angular size into meters.
 
 ---
 
-# 8. How `TimberArea` Computes Area
+# 8. How Depth-Corrected Area Is Computed
 
 The segmentation image tells the code which pixels belong to the object:
 
@@ -398,7 +493,7 @@ In one sentence:
 
 > The intrinsic matrix turns pixels into rays, and the depth map tells where those rays hit the object.
 
-That is the core idea behind the `TimberArea` area calculation.
+That is the core idea behind perspective area calculation with depth.
 
 # References
 
