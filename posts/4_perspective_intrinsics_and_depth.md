@@ -1,4 +1,4 @@
-p# Perspective Projection, Intrinsics, and Depth
+# Perspective Projection, Intrinsics, and Depth
 
 In the orthographic projection posts, the useful simplification was this:
 
@@ -177,6 +177,32 @@ That means this example assumes the camera has the same scaling horizontally and
 
 # 4. Pixel to Ray
 
+## First let's talk about the virtual image plane
+
+In the pinhole camera model, the real image sensor sits behind the small camera hole / camera center.
+
+That real image plane receives an upside-down version of the world, because light rays cross at the pinhole before they hit the sensor.
+
+For geometry, that flipped picture is annoying. So instead of drawing the image plane behind the pinhole, we usually draw a **virtual image plane** in front of the pinhole, between the camera and the scene.
+
+It represents almost the same thing as the actual image plane, but inverted to the front side:
+
+```text
+scene
+    |
+    |
+virtual image plane
+    |
+camera center / pinhole
+    |
+real image plane / sensor
+```
+
+The virtual image plane is not a physical surface inside the camera. It is a mathematical helper. It lets us say that a pixel is in front of the camera and that the ray goes from the camera center through that pixel into the world.
+
+So the virtual image plane is basically the real image plane mirrored through the pinhole. Same projection idea, but with the inconvenient upside-down sensor image turned into a forward-facing construction.
+
+## Pixel to Ray
 
 In practical terms, a ray is built like this
 
