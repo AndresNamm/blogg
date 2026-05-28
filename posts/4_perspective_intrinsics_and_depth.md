@@ -10,19 +10,21 @@ Perspective projection breaks this assumption.
 
 In perspective projection, a pixel is not a fixed-size square in the world. A pixel is more like a small direction coming out of the camera. Close to the camera, that direction covers a small physical area. Far away, the same direction covers a larger physical area. This is exactly how regular photography works. 
 
-Parallel train tracks ![alt text](/images/train.png)
+Parallel train tracks    
 
-This is also how our eyesight works. In real world its impossible to directly obtain orthographic projection. Its only possible in cases where you already have the point cloud availble.
+![alt text](/images/train.png)
 
+This is also how our eyesight works. In real world its not possible to directly obtain ortographic projection.
 
 This is why an RGB-D measurement pipeline becomes important in real world. It combines 
 
-1. camera intrinsics,
-2. depth data.
+1. image taken with perspective projection using camera intrinsics
+2. depth data (this can be from lidar, photogrammetry ...)
 
-The intrinsics tell us where a pixel is looking.
 
-The depth tells us how far away the object is at that pixel.
+In essence
+- The intrinsics tell us where a pixel is looking.
+- The depth tells us how far away the object is at that pixel.
 
 Together they let us estimate how large that pixel is in meters.
 
@@ -59,6 +61,13 @@ fy = 3003.1174
 cx = 2011.17
 cy = 1514.9209
 ```
+
+Definitions:
+
+- `fx`: focal length **in pixels** in the horizontal direction.
+- `fy`: focal length **in pixels** in the vertical direction.
+- `cx`: x-coordinate of the principal point, in pixels.
+- `cy`: y-coordinate of the principal point, in pixels.
 
 These four values define how image pixels relate to camera rays.
 
