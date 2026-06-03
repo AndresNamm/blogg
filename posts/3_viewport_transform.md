@@ -1,14 +1,15 @@
 # Viewport Transform for Orthographic LiDAR Projection
 
-This is **Part 3** of a 3-part series. Part 1 covers camera-space transformation, Part 2 covers orthographic projection into normalized device coordinates, and this post focuses on the last step: how normalized coordinates become actual image pixels in a LiDAR orthographic projection workflow.
+This is **Part 3** of a 4-part series. Part 1 covers camera-space transformation, Part 2 covers orthographic projection into normalized device coordinates, and this post focuses on how normalized coordinates become actual image pixels in a LiDAR orthographic projection workflow.
 
 The series is:
 
-1. [Understanding Camera Coordinate Transformations](camera_transformation.md)
-2. [Orthographic Projection? 📸](orthographic_projection.md)
-3. [Viewport Transform for Orthographic LiDAR Projection](viewport_transform.md)
+1. [Understanding Camera Coordinate Transformations](1_camera_transformation.md)
+2. [Orthographic Projection? 📸](2_orthographic_projection.md)
+3. [Viewport Transform for Orthographic LiDAR Projection](3_viewport_transform.md)
+4. [Perspective Projection, Intrinsics, and Depth](4_perspective_intrinsics_and_depth.md)
 
-If you have not read the previous steps yet, start with [Understanding Camera Coordinate Transformations](camera_transformation.md) and then [Orthographic Projection? 📸](orthographic_projection.md).
+If you have not read the previous steps yet, start with [Understanding Camera Coordinate Transformations](1_camera_transformation.md) and then [Orthographic Projection? 📸](2_orthographic_projection.md).
 
 ---
 
@@ -288,6 +289,6 @@ The important point is that the viewport transform is not some mysterious extra 
 
 # References
 
-1. [Understanding Camera Coordinate Transformations](camera_transformation.md)
+1. [Understanding Camera Coordinate Transformations](1_camera_transformation.md)
 2. [Right-Handed vs Left-Handed Coordinate Systems](right_hand_vs_left_hand.md)
 3. Scratchapixel, [Computing Pixel Coordinates of 3D Points](https://www.scratchapixel.com/lessons/3d-basic-rendering/computing-pixel-coordinates-of-3d-point/mathematics-computing-2d-coordinates-of-3d-points.html)

@@ -2,11 +2,12 @@
 
 Have you ever wondered how we represent 3D objects on a 2D screen? One of the ways to do this is through **orthographic projection**. In simple terms, orthographic projection is a way of drawing a 3D object in 2D that preserves the object's proportions, no matter how near or far it is. This is different from perspective projection, which makes objects appear smaller as they get farther away. This is particularly useful in technical drawings, such as architectural plans or engineering designs, where it's important to maintain the exact measurements of the object.
 
-This is **Part 2** of a 3-part series:
+This is **Part 2** of a 4-part series:
 
-1. [Understanding Camera Coordinate Transformations](camera_transformation.md)
-2. [Orthographic Projection? 📸](orthographic_projection.md)
-3. [Viewport Transform for Orthographic LiDAR Projection](viewport_transform.md)
+1. [Understanding Camera Coordinate Transformations](1_camera_transformation.md)
+2. [Orthographic Projection? 📸](2_orthographic_projection.md)
+3. [Viewport Transform for Orthographic LiDAR Projection](3_viewport_transform.md)
+4. [Perspective Projection, Intrinsics, and Depth](4_perspective_intrinsics_and_depth.md)
 
 ![](images/orto.png)
 
@@ -34,7 +35,7 @@ Before doing projection to a plane, we have points in 3D world. We can assume th
 
 The first step in orthographic projection is to transform the car's points from the world coordinate system to the camera's coordinate system. This is like moving and rotating the entire world so that the camera is at the origin (0,0,0) and looking down a specific axis, usually the negative Z-axis. This transformation is done using a "view matrix", which combines translation and rotation to position the scene correctly from the camera's perspective.
 
-Read more details about this in another article [Transforming To Global Coordinate System](camera_transformation.md)
+Read more details about this in another article [Transforming To Global Coordinate System](1_camera_transformation.md)
 
 ---
 
@@ -167,9 +168,9 @@ The resulting Pclip coordinates are almost final. The hardware then performs two
 1. **Clipping**: Any vertex with an x, y, or z coordinate outside the [-1, 1] range is discarded.
 2. **Viewport Transform**: The surviving NDC coordinates are mapped to the pixel coordinates of your window or screen. For example, an x-coordinate of -1 becomes the left edge of the screen, and +1 becomes the right edge.
 
-The viewport transform is the next step in this series, covered in [Viewport Transform for Orthographic LiDAR Projection](viewport_transform.md).
+The viewport transform is the next step in this series, covered in [Viewport Transform for Orthographic LiDAR Projection](3_viewport_transform.md).
 
-This post builds directly on [Understanding Camera Coordinate Transformations](camera_transformation.md), which is Part 1 of the series.
+This post builds directly on [Understanding Camera Coordinate Transformations](1_camera_transformation.md), which is Part 1 of the series.
 
 # References
 

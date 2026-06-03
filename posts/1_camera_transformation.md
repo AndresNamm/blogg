@@ -4,11 +4,12 @@
 
 In modern computer graphics and computer vision, it's essential to convert points from a global (world) coordinate system into a camera's local coordinate system.  This is accomplished by a combination of translation and rotation, conveniently packaged into a single  homogeneous transformation matrix.  In this post, we'll derive that matrix step by step and show how it acts on a point. nB, we focus here on orthographic projection, instead of perspective projection, because it's an easier way to understand.
 
-This is **Part 1** of a 3-part series:
+This is **Part 1** of a 4-part series:
 
-1. [Understanding Camera Coordinate Transformations](camera_transformation.md)
-2. [Orthographic Projection? 📸](orthographic_projection.md)
-3. [Viewport Transform for Orthographic LiDAR Projection](viewport_transform.md)
+1. [Understanding Camera Coordinate Transformations](1_camera_transformation.md)
+2. [Orthographic Projection? 📸](2_orthographic_projection.md)
+3. [Viewport Transform for Orthographic LiDAR Projection](3_viewport_transform.md)
+4. [Perspective Projection, Intrinsics, and Depth](4_perspective_intrinsics_and_depth.md)
 
 
 
@@ -149,7 +150,7 @@ $$
 
 With this matrix in hand, you have the foundation for projecting 3D scenes onto a 2D camera image, performing view frustum culling, and more advanced rendering and vision algorithms.  Happy coding!
 
-The next step in the series is [Orthographic Projection? 📸](orthographic_projection.md), where the camera-space box is mapped into normalized device coordinates.
+The next step in the series is [Orthographic Projection? 📸](2_orthographic_projection.md), where the camera-space box is mapped into normalized device coordinates.
 
 # References
 

@@ -1,5 +1,34 @@
 # Perspective Projection, Intrinsics, and Depth
 
+This is **Part 4** of a 4-part series:
+
+1. [Understanding Camera Coordinate Transformations](1_camera_transformation.md)
+2. [Orthographic Projection? 📸](2_orthographic_projection.md)
+3. [Viewport Transform for Orthographic LiDAR Projection](3_viewport_transform.md)
+4. [Perspective Projection, Intrinsics, and Depth](4_perspective_intrinsics_and_depth.md)
+
+---
+
+# Table of Contents
+
+- [Perspective Projection, Intrinsics, and Depth](#perspective-projection-intrinsics-and-depth)
+- [Table of Contents](#table-of-contents)
+- [1. The Intrinsic Matrix](#1-the-intrinsic-matrix)
+- [2. Principal Point: `cx`, `cy`](#2-principal-point-cx-cy)
+- [3. Focal Length in Pixels: `fx`, `fy`](#3-focal-length-in-pixels-fx-fy)
+  - [What focal length really does](#what-focal-length-really-does)
+- [4. Pixel to Ray](#4-pixel-to-ray)
+  - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
+  - [Pixel to Ray](#pixel-to-ray)
+- [5. Where Depth Enters](#5-where-depth-enters)
+- [6. Why One Pixel Has a Physical Size](#6-why-one-pixel-has-a-physical-size)
+- [7. Angular Size Plus Depth Becomes Meters](#7-angular-size-plus-depth-becomes-meters)
+- [8. How Depth-Corrected Area Is Computed](#8-how-depth-corrected-area-is-computed)
+- [9. The Short Version](#9-the-short-version)
+- [References](#references)
+
+---
+
 In the orthographic projection posts, the useful simplification was this:
 
 > A pixel can be treated as a constant-sized square in the real world.
@@ -219,6 +248,9 @@ In practical terms, a ray is built like this
 ray_center = np.array([x - cx, y - cy, fx])
 ```
 
+"ray_center" means the point on the virtual image plane that the ray passes through, measured relative to the pinhole/camera center.
+
+
 
 The components mean:
 
@@ -262,36 +294,9 @@ So the intrinsic matrix lets us turn a pixel coordinate into a camera ray.
 
 This is the first half of the perspective-measurement trick.
 
-The important mental picture is the pinhole camera model:
-
-```text
-scene
-    ^
-    |
-ray direction
-    ^
-    |
-virtual image plane
-    ^
-    |
-camera center / pinhole
-```
-
-The real camera sensor is physically behind the pinhole, but the virtual image plane is usually drawn in front of the camera center, between the pinhole and the scene. This avoids flipping the image and makes the geometry easier to reason about.
-
-On that virtual image plane, a pixel is described by something like:
-
-```text
-[x - cx, y - cy, f]
-```
-
-or, in the simplified form:
-
-```text
-[x, y, f]
-```
 
 Those coordinates do not say where the object is in 3D. They say which direction the camera is looking for that pixel.
+
 
 After normalization:
 
