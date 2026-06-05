@@ -357,9 +357,9 @@ This is why LiDAR matters. In a normal RGB image, we see the pixel, but we do no
 If:
 
 ```text
-C = camera center
-d = ray direction
-z = depth
+C = camera center - Also known as the pinhole.
+d = ray direction dormalized
+z = depth obtained
 p = actual 3D point
 ```
 
@@ -406,18 +406,13 @@ ray_center and ray_right
 ray_center and ray_down
 ```
 
-Those are the angular width and angular height of one pixel.
+Using the standard vector dot product formula, the angle $\theta$ between two vectors $\mathbf{a}$ and $\mathbf{b}$ is:
 
-The geometry is:
+$$
+\theta = \arccos\left(\frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}\|}\right)
+$$
 
-```text
-camera
-   \  \
-    \  \       same angular gap
-     \  \
-      \  \
-       ----    physical pixel width at this depth
-```
+
 
 Close to the camera, the gap is small.
 
