@@ -13,6 +13,8 @@ This is **Part 4** of a 4-part series:
 
 - [Perspective Projection, Intrinsics, and Depth](#perspective-projection-intrinsics-and-depth)
 - [Table of Contents](#table-of-contents)
+- [Glossary](#glossary)
+- [Intro](#intro)
 - [1. The Intrinsic Matrix](#1-the-intrinsic-matrix)
 - [2. Principal Point: `cx`, `cy`](#2-principal-point-cx-cy)
 - [3. Focal Length in Pixels: `fx`, `fy`](#3-focal-length-in-pixels-fx-fy)
@@ -21,13 +23,25 @@ This is **Part 4** of a 4-part series:
   - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
   - [Pixel to Ray](#pixel-to-ray)
 - [5. Where Depth Enters](#5-where-depth-enters)
-- [6. Why One Pixel Has a Physical Size](#6-why-one-pixel-has-a-physical-size)
+- [6. Pixel Physical Size Calculation](#6-pixel-physical-size-calculation)
 - [7. Angular Size Plus Depth Becomes Meters](#7-angular-size-plus-depth-becomes-meters)
 - [8. How Depth-Corrected Area Is Computed](#8-how-depth-corrected-area-is-computed)
 - [9. The Short Version](#9-the-short-version)
 - [References](#references)
 
 ---
+
+
+# Glossary
+
+- **Pinhole (Camera Center)**: The theoretical single point where all incoming light rays intersect before hitting the image sensor.
+- **Virtual Image Plane**: A mathematical construct placed *in front* of the camera center. It represents the image correctly oriented (upright), rather than working with the physically upside-down image on the real sensor.
+- **Intrinsic Matrix**: A matrix mapping 2D pixel coordinates to 3D viewing rays, containing the focal length and principal point.
+- **Principal Point ($c_x, c_y$)**: The physical "center of vision" on the sensor; the exact pixel where the camera looks directly straight ahead.
+- **Focal Length ($f_x, f_y$)**: The distance from the pinhole to the virtual image plane, measured in pixel units, which dictates the field of view.
+- **Depth Map**: An array of values matching the image resolution where each pixel encodes the physical distance from the camera to the visible surface.
+
+# Intro
 
 In the orthographic projection posts, the useful simplification was this:
 
@@ -321,7 +335,7 @@ the object is exactly here
 A normal RGB image gives color at each pixel, but it does not give the depth of the visible surface. One pixel therefore corresponds to infinitely many possible 3D points along the same ray:
 
 ```text
-camera center ---------------------------->
+pinhole  ---------------------------->
                                  many possible depths
 ```
 
@@ -383,7 +397,7 @@ So the pipeline can project LiDAR into the RGB image, segment the object in 2D, 
 
 ---
 
-# 6. Why One Pixel Has a Physical Size
+# 6. Pixel Physical Size Calculation
 
 For area measurement, we do not only need the 3D position of one pixel. We need area.
 
