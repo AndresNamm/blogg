@@ -22,6 +22,7 @@ This is **Part 4** of a 4-part series:
 - [4. Pixel to Ray](#4-pixel-to-ray)
   - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
   - [Pixel to Ray](#pixel-to-ray)
+  - [Calculating the angle for a given ray](#calculating-the-angle-for-a-given-ray)
 - [5. Where Depth Enters](#5-where-depth-enters)
 - [6. Pixel Physical Size Calculation](#6-pixel-physical-size-calculation)
 - [7. Angular Size Plus Depth Becomes Meters](#7-angular-size-plus-depth-becomes-meters)
@@ -339,6 +340,47 @@ pinhole  ---------------------------->
                                  many possible depths
 ```
 
+## Calculating the angle for a given ray
+
+Once we have a ray, we often want its **angle away from straight ahead**. This is useful because it tells us how far off-axis the camera is looking for a given pixel.
+
+The ray is built from two pieces of information:
+
+```text
+pixel offset = how far the pixel is from the principal point
+focal length = forward distance to the virtual image plane
+```
+
+These two form a right triangle:
+
+- the **opposite** side is the pixel offset (`x - cx` horizontally, or `y - cy` vertically),
+- the **adjacent** side is the focal length (`fx` or `fy`).
+
+The tangent of the ray angle is then simply the offset divided by the focal length:
+
+$$
+\tan(\theta_x) = \frac{x - c_x}{f_x}
+\qquad
+\tan(\theta_y) = \frac{y - c_y}{f_y}
+$$
+
+Taking the inverse tangent gives the angle itself:
+
+$$
+\theta_x = \arctan\!\left(\frac{x - c_x}{f_x}\right)
+\qquad
+\theta_y = \arctan\!\left(\frac{y - c_y}{f_y}\right)
+$$
+
+In short:
+
+```text
+divide the pixel offset by the focal length -> tangent of the angle
+apply arctan                                -> the ray angle
+```
+
+A pixel at the principal point gives an offset of `0`, so the angle is `0` (straight ahead). The farther the pixel sits from the principal point, the larger the angle.
+
 ---
 
 # 5. Where Depth Enters
@@ -372,7 +414,7 @@ If:
 
 ```text
 C = camera center - Also known as the pinhole.
-d = ray direction dormalized
+d = ray normalized
 z = depth obtained
 p = actual 3D point
 ```
@@ -405,7 +447,7 @@ So the question becomes:
 
 > At this depth, how much real-world width and height does one image pixel cover?
 
-The code compares the ray through one pixel with the ray through the neighboring pixel:
+To estimate that pixel footprint, we compare the ray through one pixel with the rays through its immediate neighbors:
 
 ```python
 ray_center = np.array([x - cx, y - cy, fx])
@@ -413,24 +455,48 @@ ray_right = np.array([x + 1 - cx, y - cy, fx])
 ray_down = np.array([x - cx, y + 1 - cy, fy])
 ```
 
-Then it computes the angle between:
+Then we can get the angular separation in two equivalent ways:
+
+1. **Method A: angle between two 3D vectors (dot product)**
 
 ```text
-ray_center and ray_right
-ray_center and ray_down
+ray_center vs ray_right
+ray_center vs ray_down
 ```
 
-Using the standard vector dot product formula, the angle $\theta$ between two vectors $\mathbf{a}$ and $\mathbf{b}$ is:
+Using the standard vector formula, the angle $\theta$ between two vectors $\mathbf{a}$ and $\mathbf{b}$ is:
 
 $$
-\theta = \arccos\left(\frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}\|}\right)
+    \theta = \arccos\left(\frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}\|}\right)
 $$
 
+2. **Method B: subtract per-ray off-axis angles (from arctan)**
+
+From earlier, let $\theta_x$ and $\theta_y$ denote the horizontal and vertical off-axis angles of a ray from the principal point:
+
+$$
+    \theta_x = \arctan\!\left(\frac{x-c_x}{f_x}\right),
+\qquad
+    \theta_y = \arctan\!\left(\frac{y-c_y}{f_y}\right)
+$$
+
+So the one-pixel angular step can also be written as:
+
+$$
+\Delta\theta_x = \left|\arctan\!\left(\frac{x+1-c_x}{f_x}\right) - \arctan\!\left(\frac{x-c_x}{f_x}\right)\right|
+$$
+
+$$
+\Delta\theta_y = \left|\arctan\!\left(\frac{y+1-c_y}{f_y}\right) - \arctan\!\left(\frac{y-c_y}{f_y}\right)\right|
+$$
+
+Both methods describe the same local pixel angle; the dot-product form is general in 3D, while the arctan-difference form makes the center-offset intuition explicit.
 
 
-Close to the camera, the gap is small.
 
-Far from the camera, the gap is larger.
+- Close to the camera, the gap is small.
+
+- Far from the camera, the gap is larger.
 
 That is perspective.
 
