@@ -376,10 +376,10 @@ In short:
 
 ```text
 divide the pixel offset by the focal length -> tangent of the angle
-apply arctan                                -> the ray angle
+apply arctan                                -> the ray angle (in radians)
 ```
 
-A pixel at the principal point gives an offset of `0`, so the angle is `0` (straight ahead). The farther the pixel sits from the principal point, the larger the angle.
+Note: `arctan()` and always return angles in radians. A pixel at the principal point gives an offset of `0`, so the angle is `0` (straight ahead). The farther the pixel sits from the principal point, the larger the angle. All angles computed from intrinsics are in radians and can be used directly in `np.tan()`, `np.sin()`, etc.
 
 ---
 
@@ -507,8 +507,8 @@ That is perspective.
 After the code has:
 
 ```text
-angular_width
-angular_height
+angular_width_rad
+angular_height_rad
 depth
 ```
 
@@ -518,6 +518,14 @@ it computes:
 width_m = 2 * distance_m * np.tan(angular_width_rad / 2)
 height_m = 2 * distance_m * np.tan(angular_height_rad / 2)
 ```
+
+The formula comes from splitting the pixel's viewing angle into two equal halves. If the full angular width is `angular_width_rad`, then half of that angle reaches from the center ray to one side of the pixel footprint. At distance `distance_m`, the tangent of that half-angle gives half of the physical width:
+
+```text
+half_width = distance_m * tan(angular_width_rad / 2)
+```
+
+Multiplying by `2` gives the full pixel width in meters. The same logic applies vertically for `height_m`.
 
 This converts angular pixel size into physical pixel size.
 
