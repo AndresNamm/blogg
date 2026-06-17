@@ -22,10 +22,10 @@ This is **Part 4** of a 4-part series:
 - [4. Pixel to Ray](#4-pixel-to-ray)
   - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
   - [Pixel to Ray](#pixel-to-ray)
-- [5. Calculating the angle for a given ray from direct ray from principal point](#5-calculating-the-angle-for-a-given-ray-from-direct-ray-from-principal-point)
+- [5. Calculating the angle for a given ray from the principal ray](#5-calculating-the-angle-for-a-given-ray-from-the-principal-ray)
 - [6. Where Depth Enters](#6-where-depth-enters)
 - [7. Pixel Physical Size Calculation](#7-pixel-physical-size-calculation)
-- [7. Angular Size Plus Depth Becomes Meters](#7-angular-size-plus-depth-becomes-meters)
+- [8. Angular Size Plus Depth Becomes Meters](#8-angular-size-plus-depth-becomes-meters)
 - [9. How Depth-Corrected Area Is Computed](#9-how-depth-corrected-area-is-computed)
 - [10. The Short Version](#10-the-short-version)
 - [References](#references)
@@ -340,7 +340,7 @@ pinhole  ---------------------------->
                                  many possible depths
 ```
 
-# 5. Calculating the angle for a given ray from direct ray from principal point
+# 5. Calculating the angle for a given ray from the principal ray
 
 Once we have a ray, we often want its **angle away from straight ahead**. This is useful because it tells us how far off-axis the camera is looking for a given pixel.
 
@@ -450,30 +450,15 @@ So the question becomes:
 
 > At this depth, how much real-world width and height does one image pixel cover?
 
-To estimate that pixel footprint, we compare the ray through one pixel with the rays through its immediate neighbors:
+To estimate that pixel footprint, we compare the off-axis angle of one pixel with the off-axis angle of its immediate neighbors.
 
 ```python
-ray_center = np.array([x - cx, y - cy, fx])
-ray_right = np.array([x + 1 - cx, y - cy, fx])
-ray_down = np.array([x - cx, y + 1 - cy, fy])
+theta_x = np.arctan((x - cx) / fx)
+theta_x_right = np.arctan((x + 1 - cx) / fx)
+
+theta_y = np.arctan((y - cy) / fy)
+theta_y_down = np.arctan((y + 1 - cy) / fy)
 ```
-
-Then we can get the angular separation in two equivalent ways:
-
-1. **Method A: angle between two 3D vectors (dot product)**
-
-```text
-ray_center vs ray_right
-ray_center vs ray_down
-```
-
-Using the standard vector formula, the angle $\theta$ between two vectors $\mathbf{a}$ and $\mathbf{b}$ is:
-
-$$
-    \theta = \arccos\left(\frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}\|}\right)
-$$
-
-2. **Method B: subtract per-ray off-axis angles (from arctan)**
 
 From earlier, let $\theta_x$ and $\theta_y$ denote the horizontal and vertical off-axis angles of a ray from the principal point:
 
@@ -493,7 +478,7 @@ $$
 \Delta\theta_y = \left|\arctan\!\left(\frac{y+1-c_y}{f_y}\right) - \arctan\!\left(\frac{y-c_y}{f_y}\right)\right|
 $$
 
-Both methods describe the same local pixel angle; the dot-product form is general in 3D, while the arctan-difference form makes the center-offset intuition explicit.
+These two values are the angular width and angular height of that pixel in radians.
 
 
 
@@ -505,7 +490,7 @@ That is perspective.
 
 ---
 
-# 7. Angular Size Plus Depth Becomes Meters
+# 8. Angular Size Plus Depth Becomes Meters
 
 After the code has:
 
