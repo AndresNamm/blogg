@@ -22,12 +22,12 @@ This is **Part 4** of a 4-part series:
 - [4. Pixel to Ray](#4-pixel-to-ray)
   - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
   - [Pixel to Ray](#pixel-to-ray)
-  - [Calculating the angle for a given ray](#calculating-the-angle-for-a-given-ray)
-- [5. Where Depth Enters](#5-where-depth-enters)
-- [6. Pixel Physical Size Calculation](#6-pixel-physical-size-calculation)
+- [5. Calculating the angle for a given ray from direct ray from principal point](#5-calculating-the-angle-for-a-given-ray-from-direct-ray-from-principal-point)
+- [6. Where Depth Enters](#6-where-depth-enters)
+- [7. Pixel Physical Size Calculation](#7-pixel-physical-size-calculation)
 - [7. Angular Size Plus Depth Becomes Meters](#7-angular-size-plus-depth-becomes-meters)
-- [8. How Depth-Corrected Area Is Computed](#8-how-depth-corrected-area-is-computed)
-- [9. The Short Version](#9-the-short-version)
+- [9. How Depth-Corrected Area Is Computed](#9-how-depth-corrected-area-is-computed)
+- [10. The Short Version](#10-the-short-version)
 - [References](#references)
 
 ---
@@ -340,7 +340,7 @@ pinhole  ---------------------------->
                                  many possible depths
 ```
 
-## Calculating the angle for a given ray
+# 5. Calculating the angle for a given ray from direct ray from principal point
 
 Once we have a ray, we often want its **angle away from straight ahead**. This is useful because it tells us how far off-axis the camera is looking for a given pixel.
 
@@ -379,11 +379,14 @@ divide the pixel offset by the focal length -> tangent of the angle
 apply arctan                                -> the ray angle (in radians)
 ```
 
-Note: `arctan()` and always return angles in radians. A pixel at the principal point gives an offset of `0`, so the angle is `0` (straight ahead). The farther the pixel sits from the principal point, the larger the angle. All angles computed from intrinsics are in radians and can be used directly in `np.tan()`, `np.sin()`, etc.
+- **NB!** **_`arctan()` returns angles in radians._**
+
+
+A pixel at the principal point gives an offset of `0`, so the angle is `0` (straight ahead). The farther the pixel sits from the principal point, the larger the angle. All angles computed from intrinsics are in radians.
 
 ---
 
-# 5. Where Depth Enters
+# 6. Where Depth Enters
 
 The depth data answers a different question:
 
@@ -439,7 +442,7 @@ So the pipeline can project LiDAR into the RGB image, segment the object in 2D, 
 
 ---
 
-# 6. Pixel Physical Size Calculation
+# 7. Pixel Physical Size Calculation
 
 For area measurement, we do not only need the 3D position of one pixel. We need area.
 
@@ -550,7 +553,7 @@ The depth scales that angular size into meters.
 
 ---
 
-# 8. How Depth-Corrected Area Is Computed
+# 9. How Depth-Corrected Area Is Computed
 
 The segmentation image tells the code which pixels belong to the object:
 
@@ -591,7 +594,7 @@ That is the practical difference between orthographic measurement and perspectiv
 
 ---
 
-# 9. The Short Version
+# 10. The Short Version
 
 The intrinsic matrix tells us:
 
