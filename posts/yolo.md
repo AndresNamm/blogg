@@ -6,4 +6,3 @@
 ## Components 
 
 - [Batch Normalization](https://github.com/AndresNamm/yolo_in_depth/blob/main/batch_normalization_extracted.ipynb)
-j
