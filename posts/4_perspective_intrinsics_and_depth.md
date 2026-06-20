@@ -451,15 +451,6 @@ So the question becomes:
 > At this depth, how much real-world width and height does one image pixel cover?
 
 To estimate that pixel footprint, we compare the off-axis angle of one pixel with the off-axis angle of its immediate neighbors.
-
-```python
-theta_x = np.arctan((x - cx) / fx)
-theta_x_right = np.arctan((x + 1 - cx) / fx)
-
-theta_y = np.arctan((y - cy) / fy)
-theta_y_down = np.arctan((y + 1 - cy) / fy)
-```
-
 From earlier, let $\theta_x$ and $\theta_y$ denote the horizontal and vertical off-axis angles of a ray from the principal point:
 
 $$
@@ -502,10 +493,11 @@ depth
 
 it computes:
 
-```python
-width_m = 2 * distance_m * np.tan(angular_width_rad / 2)
-height_m = 2 * distance_m * np.tan(angular_height_rad / 2)
-```
+$$
+\text{width}_m = 2 \, d \, \tan\!\left(\frac{\Delta\theta_x}{2}\right)
+\qquad
+\text{height}_m = 2 \, d \, \tan\!\left(\frac{\Delta\theta_y}{2}\right)
+$$
 
 The formula comes from splitting the pixel's viewing angle into two equal halves. If the full angular width is `angular_width_rad`, then half of that angle reaches from the center ray to one side of the pixel footprint. At distance `distance_m`, the tangent of that half-angle gives half of the physical width:
 
