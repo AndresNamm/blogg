@@ -25,12 +25,19 @@ This is **Part 4** of a 4-part series:
 - [5. Calculating the angle for a given ray from the principal ray](#5-calculating-the-angle-for-a-given-ray-from-the-principal-ray)
 - [6. Where Depth Enters](#6-where-depth-enters)
 - [7. Pixel Physical Size Calculation](#7-pixel-physical-size-calculation)
+  - [Tangent reminder](#tangent-reminder)
+  - [Calculation itself](#calculation-itself)
 - [8. Angular Size Plus Depth Becomes Meters](#8-angular-size-plus-depth-becomes-meters)
+  - [Step 1](#step-1)
+  - [Step 2](#step-2)
+  - [Step 3](#step-3)
+  - [Overall](#overall)
 - [9. How Depth-Corrected Area Is Computed](#9-how-depth-corrected-area-is-computed)
 - [10. The Short Version](#10-the-short-version)
 - [References](#references)
 
 ---
+
 
 
 # Glossary
@@ -379,7 +386,6 @@ divide the pixel offset by the focal length -> tangent of the angle
 apply arctan                                -> the ray angle (in radians)
 ```
 
-- **NB!** **_`arctan()` returns angles in radians._**
 
 
 A pixel at the principal point gives an offset of `0`, so the angle is `0` (straight ahead). The farther the pixel sits from the principal point, the larger the angle. All angles computed from intrinsics are in radians.
@@ -444,11 +450,32 @@ So the pipeline can project LiDAR into the RGB image, segment the object in 2D, 
 
 # 7. Pixel Physical Size Calculation
 
-For area measurement, we do not only need the 3D position of one pixel. We need area.
 
-So the question becomes:
+## Tangent reminder
 
-> At this depth, how much real-world width and height does one image pixel cover?
+Almost every step in this post uses a right triangle: the **focal length** is the forward (adjacent) side, and the **pixel offset** is the sideways (opposite) side.
+
+The tangent of an angle is just the ratio of those two sides:
+
+$$
+\tan(\theta) = \frac{\text{opposite}}{\text{adjacent}}
+$$
+
+So if we know the pixel offset and the focal length, we get the tangent of the ray angle directly. To recover the angle itself, we use the inverse, the arctangent:
+
+$$
+\theta = \arctan\!\left(\frac{\text{opposite}}{\text{adjacent}}\right)
+$$
+
+Two facts are enough for this tutorial:
+
+- `tan` takes an angle and returns a length ratio. Larger angle, larger ratio.
+- `arctan` does the reverse: it takes a ratio and returns an angle (in radians).
+
+That is why pixel offsets divided by focal length give angles via `arctan`, and angles multiplied back through `tan` give physical sizes. Tangent and arctangent are the bridge between pixels and angles in both directions.
+
+## Calculation itself
+
 
 To estimate that pixel footprint, we compare the off-axis angle of one pixel with the off-axis angle of its immediate neighbors.
 From earlier, let $\theta_x$ and $\theta_y$ denote the horizontal and vertical off-axis angles of a ray from the principal point:
@@ -469,15 +496,8 @@ $$
 \Delta\theta_y = \left|\arctan\!\left(\frac{y+1-c_y}{f_y}\right) - \arctan\!\left(\frac{y-c_y}{f_y}\right)\right|
 $$
 
-These two values are the angular width and angular height of that pixel in radians.
+These two values are the angular width and angular height of that pixel.
 
-
-
-- Close to the camera, the gap is small.
-
-- Far from the camera, the gap is larger.
-
-That is perspective.
 
 ---
 
@@ -486,8 +506,8 @@ That is perspective.
 After the code has:
 
 ```text
-angular_width_rad
-angular_height_rad
+angle_x_scale
+angle_y_scale
 depth
 ```
 
@@ -499,15 +519,39 @@ $$
 \text{height}_m = 2 \, d \, \tan\!\left(\frac{\Delta\theta_y}{2}\right)
 $$
 
-The formula comes from splitting the pixel's viewing angle into two equal halves. If the full angular width is `angular_width_rad`, then half of that angle reaches from the center ray to one side of the pixel footprint. At distance `distance_m`, the tangent of that half-angle gives half of the physical width:
+Lets explain this formular step by step
 
-```text
-half_width = distance_m * tan(angular_width_rad / 2)
-```
+## Step 1
 
-Multiplying by `2` gives the full pixel width in meters. The same logic applies vertically for `height_m`.
+- Division by 2 of angle 
+ 
+The division by two actually comes from the fact that we have two rays. We calculate the angular width between the two rays, and these rays point to the center of each pixel.For our pixel, this means that we actually care for only the angle between our pixel ray center and our pixel edge.Now we have the radian of or radian angle between the pixel center ray and the pixel h ray. We use the tangent of that radian to get the distance and multiply that with two. 
 
-This converts angular pixel size into physical pixel size.
+## Step 2
+
+- tan(angle)
+  
+with tangent of angle we get relation between opposite side (pixel width) and adjacent side (pixel depth)
+
+## Step 3
+
+- d * tan(angle)
+
+tan(angle)=opposite/adjacent,
+distance(d)=adjacent
+
+here we leverage the connection tan and angle have with ratio between right triangle sides, if we have ratio and one side available, we can derive the  other side
+
+
+we multiply the distance with ratio of opposite/adjacent
+
+opposite=adjacent*opposite/adjacent
+
+
+
+
+## Overall
+
 
 The intuition is:
 
