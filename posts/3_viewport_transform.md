@@ -1,6 +1,6 @@
 # Viewport Transform for Orthographic LiDAR Projection
 
-This is **Part 3** of a 4-part series. Part 1 covers camera-space transformation, Part 2 covers orthographic projection into normalized device coordinates, and this post focuses on how normalized coordinates become actual image pixels in a LiDAR orthographic projection workflow.
+This is **Part 3** of a 5-part series. Part 1 covers camera-space transformation, Part 2 covers orthographic projection into normalized device coordinates, and this post focuses on how normalized coordinates become actual image pixels in a LiDAR orthographic projection workflow.
 
 The series is:
 
@@ -8,6 +8,7 @@ The series is:
 2. [Orthographic Projection? 📸](2_orthographic_projection.md)
 3. [Viewport Transform for Orthographic LiDAR Projection](3_viewport_transform.md)
 4. [Perspective Projection, Intrinsics, and Depth](4_perspective_intrinsics_and_depth.md)
+5. [Orthographic vs Perspective: Scaling, the Perspective Divide, and Getting to Pixels](5_ortho_vs_perspective_scaling.md)
 
 If you have not read the previous steps yet, start with [Understanding Camera Coordinate Transformations](1_camera_transformation.md) and then [Orthographic Projection? 📸](2_orthographic_projection.md).
 
