@@ -2,7 +2,7 @@
 
 The shortest useful definition of a derivative is:
 
-> A derivative tells how much a function output changes relative to a tiny input movement. Ratio between output change to input change.
+> A derivative tells how much a function's output changes relative to a tiny input movement. It is the ratio of output change to input change.
 
 For a single-variable function, that idea is written as:
 
@@ -12,19 +12,25 @@ $$
 
 This says: move the input by a very small amount $h$, measure the output change, and divide by the size of the input movement.
 
-Another way to rearrange the same idea is:
+Rearranging the same idea gives:
 
 $$
 f(x+h)\approx f(x)+f'(x)h
 $$
 
-Above is just moving pices around from the derivative formula. We are removing the lim sign but starting to use the approximation sign now.
+This is just the derivative formula with the pieces moved around: we drop the limit sign and replace equality with approximation, since $h$ is now a small but finite step.
 
+Although the algebra is trivial, this second form changes what the derivative *is for*. The first form is a measurement: it looks at a function we already know and reports its local rate of change. The second form is a prediction machine: from just two numbers at a single point — the value $f(x)$ and the rate $f'(x)$ — it estimates the function's value at a nearby point we have not evaluated.
 
+Read the right-hand side piece by piece:
 
-Through this we are using the derivative to estimate a nearby function value.
+- $f(x)$ is the starting value: where we are now.
+- $f'(x)h$ is the estimated change: local rate times step size.
+- Their sum is the forecast of where the function lands after the step.
 
-This is the key intuition for the whole topic. Near one point, a differentiable function behaves almost like a line. The function can still be curved globally, but if we zoom in enough around one point, the best local description is linear. In this case, linear means that each tiny input step produces a proportional output change, with the same local rate $f'(x)$.
+In other words, the rearrangement replaces the function near $x$ with the simplest possible model — a straight line through $(x, f(x))$ with slope $f'(x)$ — and everything in the rest of this post is built on that replacement. The gradient, the directional derivative, and steepest ascent are all answers to the question: what does this local linear model look like when the input is a vector?
+
+This is the key intuition for the whole topic. Near one point, a differentiable function behaves almost like a line. The function can still be curved globally, but if we zoom in enough around one point, the best local description is linear. Here, linear means that each tiny input step produces a proportional output change, with the same local rate $f'(x)$.
 
 ## From One Input to Many Inputs
 
@@ -70,13 +76,15 @@ $$
 \frac{\partial f}{\partial y}h_y
 $$
 
-This is why multivariable derivative calculations often become weighted sums. The small movement $\mathbf{h}$ has some amount of movement in the $x$ direction and some amount of movement in the $y$ direction. The partial derivatives tell the local change rate in each coordinate direction, and the movement vector tells how much of the step goes in each direction.
+ This is why multivariable derivative calculations often become weighted sums. The small movement $\mathbf{h}$ contains some movement in the $x$ direction and some in the $y$ direction. The partial derivatives give the local change rate along each coordinate axis, and the movement vector says how much of the step goes in each direction. Multiply and add.
 
-The important assumption is not only that the function is continuous. The function must be differentiable at the point. Differentiability means the function has a good local linear approximation there. Curvature and complicated behavior can exist, but as the step size goes toward zero, the linear part dominates.
+At first, it can feel strange that an arbitrarily complicated function can be reduced to a weighted sum of partial derivatives. The reason is that the derivative is about infinitesimally small movement: around the point $\mathbf{a}$, a differentiable function behaves like its tangent plane. For a finite step, curvature may matter. For an infinitesimal step, only the linear part survives, and that linear part is the derivative.
+
+One important caveat: continuity is not enough. The function must be differentiable at the point, which means precisely that a good local linear approximation exists there.
 
 ## Directional Derivative
 
-The directional derivative asks:
+The partial derivatives measure change along the coordinate axes. But we can move in any direction, not just along the axes. The directional derivative asks:
 
 > If I take a tiny step from point $\mathbf{a}$ in a chosen direction, how fast does the function value change?
 
@@ -95,9 +103,9 @@ D_{\hat{\mathbf{u}}}f(\mathbf{a})
 \frac{f(\mathbf{a}+h\hat{\mathbf{u}})-f(\mathbf{a})}{h}
 $$
 
-Because $\hat{\mathbf{u}}$ has length 1, the number $h$ is the actual step length.
+Because $\hat{\mathbf{u}}$ has length 1, the number $h$ is the actual step length. This is why we insist on a unit vector: it keeps "change per unit of distance" comparable across directions.
 
-Using the local linear approximation:
+Now derive the formula. Using the local linear approximation with $\mathbf{h}=h\hat{\mathbf{u}}$:
 
 $$
 f(\mathbf{a}+h\hat{\mathbf{u}})
@@ -131,64 +139,22 @@ $$
 
 So the directional derivative is the dot product between:
 
-- the gradient, which stores the local change rates in the coordinate directions
+- the gradient, which stores the local change rates along the coordinate axes
 - the unit direction vector, which stores the direction of the movement
 
-## Why Is It a Weighted Sum?
-
-At first, it can feel strange that a complicated function can be handled by just summing weighted partial derivatives.
-
-The reason is that the derivative is about infinitesimally small movement. Around the point $\mathbf{a}$, a differentiable function behaves like its tangent plane:
+In component form, with $\hat{\mathbf{u}}=(u_x,u_y)$, this is again a weighted sum:
 
 $$
-f(\mathbf{a}+\mathbf{h})-f(\mathbf{a})
-\approx
-\nabla f(\mathbf{a})\cdot \mathbf{h}
-$$
-
-If:
-
-$$
-\hat{\mathbf{u}}=(u_x,u_y)
-$$
-
-then stepping in that direction means moving partly in $x$ and partly in $y$:
-
-$$
-h\hat{\mathbf{u}}=(hu_x,hu_y)
-$$
-
-The approximate output change is:
-
-$$
-\Delta f
-\approx
-\frac{\partial f}{\partial x}(hu_x)
-+
-\frac{\partial f}{\partial y}(hu_y)
-$$
-
-Divide by $h$:
-
-$$
-\frac{\Delta f}{h}
-\approx
+D_{\hat{\mathbf{u}}}f(\mathbf{a})
+=
 \frac{\partial f}{\partial x}u_x
 +
 \frac{\partial f}{\partial y}u_y
 $$
 
-That is exactly:
-
-$$
-\nabla f(\mathbf{a})\cdot\hat{\mathbf{u}}
-$$
-
-The weighted sum works because we are measuring the best local linear approximation. For a finite step, curvature may matter. For an infinitesimal step, the linear part is the derivative.
-
 ## A More Formal Version
 
-If $f$ is differentiable at $\mathbf{a}$, then:
+The derivation above leaned on an approximation sign. Here is the same argument made precise. If $f$ is differentiable at $\mathbf{a}$, then by definition:
 
 $$
 \lim_{\mathbf{x}\to\mathbf{a}}
@@ -203,9 +169,9 @@ f(\mathbf{x})-
 =0
 $$
 
-This says the error of the linear approximation becomes tiny compared with the input step length.
+This says the error of the linear approximation shrinks faster than the input step length itself.
 
-Choose:
+Now restrict the movement to one direction. Choose:
 
 $$
 \mathbf{x}=\mathbf{a}+h\hat{\mathbf{u}}
@@ -304,21 +270,17 @@ $$
 \cos(\theta)=1
 $$
 
-which happens when $\theta=0$, meaning the direction vector points in the same direction as the gradient.
+which happens when $\theta=0$, meaning the direction vector points the same way as the gradient.
 
 Therefore, the gradient points in the direction of steepest ascent.
 
-The maximum directional derivative value is:
+The maximum rate of increase, achieved in that direction, is the gradient's own length:
 
 $$
 \|\nabla f(\mathbf{a})\|
 $$
 
-The steepest descent direction is the opposite direction:
-
-$$
--\nabla f(\mathbf{a})
-$$
+The steepest descent direction is the opposite one, $-\nabla f(\mathbf{a})$, which is exactly the direction gradient descent uses.
 
 ## Why Not Just Move Along the Biggest Partial Derivative?
 
@@ -399,15 +361,14 @@ $$
 
 Moving only in the $y$ direction gives a change rate of $4$. Moving in the gradient direction gives a change rate of $5$.
 
-The reason this is possible is that both directions have total length 1, but the gradient direction uses that unit-length movement across both coordinates. It is not moving "more than one unit" in total. It is choosing the unit direction whose components best align with all the positive partial derivative contributions.
+This works because both directions have total length 1, but the gradient direction spreads that unit-length movement across both coordinates. It is not moving "more than one unit" in total. It is spending its unit of movement where it pays off: partly in $x$, partly in $y$, in proportion to how much each partial derivative contributes. That balanced allocation beats putting everything into the single largest component.
 
 ## Summary
 
 - A derivative measures output change relative to a tiny input movement.
-- A differentiable function is locally approximated by an affine expression.
-- The linear part of that approximation is the derivative.
-- In many dimensions, the gradient stores the partial derivatives.
-- A directional derivative measures the change rate in one chosen unit direction.
+- A differentiable function is locally approximated by an affine expression; the linear part of that approximation is the derivative.
+- In many dimensions, the gradient collects the partial derivatives into one vector.
+- A directional derivative measures the change rate along one chosen unit direction.
 - The directional derivative formula is:
 
 $$
@@ -416,9 +377,9 @@ D_{\hat{\mathbf{u}}}f(\mathbf{a})
 \nabla f(\mathbf{a})\cdot\hat{\mathbf{u}}
 $$
 
-- This dot product is a projection of the gradient onto the chosen direction.
-- The largest projection happens when the direction matches the gradient.
-- Therefore, the gradient points in the direction of steepest ascent.
+- This dot product is the projection of the gradient onto the chosen direction.
+- The projection is largest when the direction matches the gradient itself.
+- Therefore, the gradient points in the direction of steepest ascent, and its length is that maximum rate.
 
 ## NB: Linear vs Affine
 
