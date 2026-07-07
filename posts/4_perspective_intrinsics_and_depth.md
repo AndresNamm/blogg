@@ -33,8 +33,9 @@ This is **Part 4** of a 5-part series:
   - [Step 2](#step-2)
   - [Step 3](#step-3)
   - [Overall](#overall)
-- [9. How Depth-Corrected Area Is Computed](#9-how-depth-corrected-area-is-computed)
 - [10. The Short Version](#10-the-short-version)
+- [Mermaid Diagrams](#mermaid-diagrams)
+  - [Diagram 1](#diagram-1)
 - [References](#references)
 
 ---
@@ -319,16 +320,7 @@ So one RGB pixel really means:
 
 > The object is *somewhere* along this ray — **not** that the object is exactly at one point.
 
-A normal RGB image gives color at each pixel, but it does not give the depth of the visible surface. One pixel therefore corresponds to infinitely many possible 3D points along the same ray:
-
-```mermaid
-graph LR
-    P["Pixel (x, y)"] --> R["Ray direction d"]
-    R --> D1["Point at depth = 1 m"]
-    R --> D2["Point at depth = 3 m"]
-    R --> D3["Point at depth = 7 m"]
-    R -.-> Dn["...infinitely many"]
-```
+A normal RGB image gives color at each pixel, but it does not give the depth of the visible surface. One pixel therefore corresponds to infinitely many possible 3D points along the same ray (see [Diagram 1](#diagram-1) at the end of this post).
 
 
 # 5. Calculating the angle for a given ray from the principal ray
@@ -479,126 +471,80 @@ $$
 \text{height}_m = 2 \, d \, \tan\!\left(\frac{\Delta\theta_y}{2}\right)
 $$
 
-Lets explain this formular step by step
-
 ## Step 1
 
-- Division by 2 of angle 
+- Division by 2 of the angle: $\dfrac{\Delta\theta}{2}$
  
 The division by two actually comes from the fact that we have two rays. We calculate the angular width between the two rays, and these rays point to the center of each pixel.For our pixel, this means that we actually care for only the angle between our pixel ray center and our pixel edge.Now we have the angle between the pixel center ray and the pixel edge ray. We use the tangent of that  to get the distance and multiply that with two. 
 
 ## Step 2
 
-- tan(angle)
+- $\tan(\theta)$
   
 with tangent of angle we get relation between opposite side (pixel width) and adjacent side (pixel depth)
 
 ## Step 3
 
-- d * tan(angle)
+- $d\,\tan(\theta)$
 
-tan(angle)=opposite/adjacent,
-distance(d)=adjacent
+$$
+\tan(\theta) = \frac{\text{opposite}}{\text{adjacent}}, \qquad d = \text{adjacent}
+$$
 
-here we leverage the connection tan and angle have with ratio between right triangle sides, if we have ratio and one side available, we can derive the  other side
+here we leverage the connection tan and angle have with ratio between right triangle sides, if we have ratio and one side available, we can derive the other side.
 
+We multiply the distance by the ratio of opposite/adjacent:
 
-we multiply the distance with ratio of opposite/adjacent
-
-opposite=adjacent*opposite/adjacent
+$$
+\text{opposite} = \text{adjacent} \times \frac{\text{opposite}}{\text{adjacent}}
+$$
 
 
 ## Overall
 
+The intuition is simple:
 
-The intuition is:
+> **Physical size grows with distance.**
 
-```text
-physical size grows with distance
-```
+So for a pixel with the same angular width:
 
-So if a pixel has the same angular width, then:
+| Distance | Real-world width |
+|---|---|
+| 1 meter | small |
+| 5 meters | larger |
 
-```text
-at 1 meter  -> small real-world width
-at 5 meters -> larger real-world width
-```
+This is the exact point where intrinsics and depth are combined:
 
-This is the exact point where intrinsics and depth are combined.
-
-The intrinsics produce the angular size.
-
-The depth scales that angular size into meters.
+- The **intrinsics** produce the angular size.
+- The **depth** scales that angular size into meters.
 
 ---
 
-# 9. How Depth-Corrected Area Is Computed
-
-The segmentation image tells the code which pixels belong to the object:
-
-```python
-if pix_segment[y][x] == (0, 0, 0):
-```
-
-For every black pixel, the code does:
-
-1. read depth at that pixel,
-2. use intrinsics to compute pixel angular width and height,
-3. convert angular width and height into meters using depth,
-4. add the small physical pixel area.
-
-In simplified form:
-
-```python
-for each segmented pixel:
-    d = depth_at(x, y)
-    angular_width, angular_height = pixel_angular_size(x, y, K)
-    width_m, height_m = pixel_physical_size(d, angular_width, angular_height)
-    area += width_m * height_m
-```
-
-So the final area is not:
-
-```text
-number of pixels * one fixed area
-```
-
-It is:
-
-```text
-sum of many depth-corrected pixel areas
-```
-
-That is the practical difference between orthographic measurement and perspective measurement.
-
----
 
 # 10. The Short Version
 
-The intrinsic matrix tells us:
-
-```text
-where is straight ahead?
-how much does a pixel offset change the viewing angle?
-```
-
-Depth tells us:
-
-```text
-how far away is the object at this pixel?
-```
-
-Together:
-
-```text
-intrinsics + depth = metric interpretation of an image pixel
-```
+- **The intrinsic matrix tells us:** where is straight ahead, and how much a pixel offset changes the viewing angle.
+- **Depth tells us:** how far away the object is at that pixel.
+- **Together:** intrinsics + depth = a metric interpretation of an image pixel.
 
 In one sentence:
 
 > The intrinsic matrix turns pixels into rays, and the depth map tells where those rays hit the object.
 
 That is the core idea behind perspective area calculation with depth.
+
+# Mermaid Diagrams
+
+## Diagram 1
+
+```mermaid
+graph LR
+    P["Pixel (x, y)"] --> R["Ray direction d"]
+    R --> D1["Point at depth = 1 m"]
+    R --> D2["Point at depth = 3 m"]
+    R --> D3["Point at depth = 7 m"]
+    R -.-> Dn["...infinitely many"]
+```
 
 # References
 
