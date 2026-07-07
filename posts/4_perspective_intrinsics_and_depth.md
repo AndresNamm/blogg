@@ -114,6 +114,8 @@ cx = 2011.17
 cy = 1514.9209
 ```
 
+
+
 Definitions:
 
 - `fx`: focal length **in pixels** in the horizontal direction.
@@ -244,7 +246,7 @@ In the pinhole camera model, the real image sensor sits behind the small camera 
 
 That real image plane receives an upside-down version of the world, because light rays cross at the pinhole before they hit the sensor.
 
-For geometry, that flipped picture is annoying. So instead of drawing the image plane behind the pinhole, we usually draw a **virtual image plane** in front of the pinhole, between the camera and the scene.
+For geometry, that flipped picture is annoying. So instead of drawing the image plane behind the pinhole, we usually draw a **virtual image plane** in front of the pinhole, between the camera and the scene. 
 
 It represents almost the same thing as the actual image plane, but inverted to the front side:
 
@@ -259,7 +261,9 @@ camera center / pinhole
 real image plane / sensor
 ```
 
-The virtual image plane is not a physical surface inside the camera. It is a mathematical helper. It lets us say that a pixel is in front of the camera and that the ray goes from the camera center through that pixel into the world.
+The virtual image plane is not a physical surface inside the camera. It is a mathematical helper. It lets us say that a pixel is in front of the camera and that the ray goes from the camera center through that pixel into the world. 
+
+- **It is the same distance from the pinhole as the real image plane is**
 
 So the virtual image plane is basically the real image plane mirrored through the pinhole. Same projection idea, but with the inconvenient upside-down sensor image turned into a forward-facing construction.
 
@@ -273,24 +277,15 @@ ray_center = np.array([x - cx, y - cy, fx])
 
 "ray_center" means the point on the virtual image plane that the ray passes through, measured relative to the pinhole/camera center.
 
-
-
 The components mean:
 
-```text
-x - cx = horizontal offset from straight ahead
-y - cy = vertical offset from straight ahead
-fx     = forward direction / focal length in pixel units
-```
+| Term | Meaning |
+|---|---|
+| `x - cx` | horizontal offset from straight ahead |
+| `y - cy` | vertical offset from straight ahead |
+| `fx` | forward direction / focal length in pixel units |
 
-If the pixel is at the principal point:
-
-```text
-x = cx
-y = cy
-```
-
-then:
+If the pixel is at the principal point ($x = c_x,\ y = c_y$), then:
 
 ```python
 ray_center = [0, 0, fx]
@@ -298,14 +293,7 @@ ray_center = [0, 0, fx]
 
 That ray points straight forward.
 
-If the pixel is 100 pixels to the right:
-
-```text
-x = cx + 100
-y = cy
-```
-
-then:
+If the pixel is 100 pixels to the right ($x = c_x + 100,\ y = c_y$), then:
 
 ```python
 ray_center = [100, 0, fx]
@@ -317,13 +305,11 @@ So the intrinsic matrix lets us turn a pixel coordinate into a camera ray.
 
 This is the first half of the perspective-measurement trick.
 
-
 Those coordinates do not say where the object is in 3D. They say which direction the camera is looking for that pixel.
-
 
 After normalization:
 
-```text
+```python
 d = normalize([x - cx, y - cy, f])
 ```
 
@@ -331,28 +317,25 @@ we get a unit ray direction `d` from the camera center.
 
 So one RGB pixel really means:
 
-```text
-the object is somewhere along this ray
-```
-
-not:
-
-```text
-the object is exactly here
-```
+> The object is *somewhere* along this ray — **not** that the object is exactly at one point.
 
 A normal RGB image gives color at each pixel, but it does not give the depth of the visible surface. One pixel therefore corresponds to infinitely many possible 3D points along the same ray:
 
-```text
-pinhole  ---------------------------->
-                                 many possible depths
+```mermaid
+graph LR
+    P["Pixel (x, y)"] --> R["Ray direction d"]
+    R --> D1["Point at depth = 1 m"]
+    R --> D2["Point at depth = 3 m"]
+    R --> D3["Point at depth = 7 m"]
+    R -.-> Dn["...infinitely many"]
 ```
+
 
 # 5. Calculating the angle for a given ray from the principal ray
 
 Once we have a ray, we often want its **angle away from straight ahead**. This is useful because it tells us how far off-axis the camera is looking for a given pixel.
 
-The ray is built from two pieces of information:
+- The ray is built from two pieces of information:
 
 ```text
 pixel offset = how far the pixel is from the principal point
@@ -380,16 +363,10 @@ $$
 \theta_y = \arctan\!\left(\frac{y - c_y}{f_y}\right)
 $$
 
-In short:
-
-```text
-divide the pixel offset by the focal length -> tangent of the angle
-apply arctan                                -> the ray angle (in radians)
-```
 
 
 
-A pixel at the principal point gives an offset of `0`, so the angle is `0` (straight ahead). The farther the pixel sits from the principal point, the larger the angle. All angles computed from intrinsics are in radians.
+A pixel at the principal point gives an offset of `0`, so the angle is `0` (straight ahead). The farther the pixel sits from the principal point, the larger the angle. 
 
 ---
 
@@ -397,26 +374,21 @@ A pixel at the principal point gives an offset of `0`, so the angle is `0` (stra
 
 The depth data answers a different question:
 
-```text
 How far away is the visible surface at this pixel?
-```
 
 So for a pixel `(x, y)`, the depth map might say:
 
 ```text
 depth = 2.0 meters
 ```
+ 
+In short
 
-The intrinsic matrix gives the direction.
+- The intrinsic matrix gives the direction.
 
-The depth map gives the distance.
+- The depth map gives the distance.
 
-Together:
 
-```text
-pixel + intrinsics -> ray direction
-ray direction + depth -> real metric point / size
-```
 
 This is why LiDAR matters. In a normal RGB image, we see the pixel, but we do not directly know how far away the object is. With LiDAR/depth, we get that missing scalar.
 
@@ -429,25 +401,12 @@ z = depth obtained
 p = actual 3D point
 ```
 
-then the reconstruction idea is:
+then the reconstruction idea is of a point in point cloud is:
 
 ```text
 p = C + z d
 ```
 
-This equation is the heart of RGB-D reconstruction, point clouds, SLAM, NeRF ray sampling, photogrammetry, and the LiDAR-to-RGB-to-segmentation-to-backprojection workflow.
-
-The workflow is elegant because each space does what it is good at:
-
-```text
-2D RGB image space -> segmentation works well
-3D LiDAR space     -> geometry and measurement work well
-rays + depth       -> bridge between them
-```
-
-So the pipeline can project LiDAR into the RGB image, segment the object in 2D, and then backproject the selected pixels into 3D using the depth values.
-
----
 
 # 7. Pixel Physical Size Calculation
 
@@ -462,6 +421,8 @@ $$
 \tan(\theta) = \frac{\text{opposite}}{\text{adjacent}}
 $$
 
+![alt text](images/image.png)
+
 So if we know the pixel offset and the focal length, we get the tangent of the ray angle directly. To recover the angle itself, we use the inverse, the arctangent:
 
 $$
@@ -471,7 +432,7 @@ $$
 Two facts are enough for this tutorial:
 
 - `tan` takes an angle and returns a length ratio. Larger angle, larger ratio.
-- `arctan` does the reverse: it takes a ratio and returns an angle (in radians).
+- `arctan` does the reverse: it takes a ratio and returns an angle.
 
 That is why pixel offsets divided by focal length give angles via `arctan`, and angles multiplied back through `tan` give physical sizes. Tangent and arctangent are the bridge between pixels and angles in both directions.
 
@@ -506,11 +467,9 @@ These two values are the angular width and angular height of that pixel.
 
 After the code has:
 
-```text
-angle_x_scale
-angle_y_scale
-depth
-```
+- `angle_x_scale` — angular width of the pixel ($\Delta\theta_x$)
+- `angle_y_scale` — angular height of the pixel ($\Delta\theta_y$)
+- `depth` — distance to the surface at that pixel ($d$)
 
 it computes:
 
@@ -526,7 +485,7 @@ Lets explain this formular step by step
 
 - Division by 2 of angle 
  
-The division by two actually comes from the fact that we have two rays. We calculate the angular width between the two rays, and these rays point to the center of each pixel.For our pixel, this means that we actually care for only the angle between our pixel ray center and our pixel edge.Now we have the radian of or radian angle between the pixel center ray and the pixel h ray. We use the tangent of that radian to get the distance and multiply that with two. 
+The division by two actually comes from the fact that we have two rays. We calculate the angular width between the two rays, and these rays point to the center of each pixel.For our pixel, this means that we actually care for only the angle between our pixel ray center and our pixel edge.Now we have the angle between the pixel center ray and the pixel edge ray. We use the tangent of that  to get the distance and multiply that with two. 
 
 ## Step 2
 
@@ -547,8 +506,6 @@ here we leverage the connection tan and angle have with ratio between right tria
 we multiply the distance with ratio of opposite/adjacent
 
 opposite=adjacent*opposite/adjacent
-
-
 
 
 ## Overall
