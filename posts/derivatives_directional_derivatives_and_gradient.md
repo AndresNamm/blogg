@@ -4,6 +4,12 @@ The shortest useful definition of a derivative is:
 
 > A derivative tells how much a function's output changes relative to a tiny input movement. It is the ratio of output change to input change.
 
+$$
+\text{derivative} = \frac{\text{output change}}{\text{input change}}
+$$
+
+
+
 For a single-variable function, that idea is written as:
 
 $$
@@ -58,7 +64,7 @@ $$
 f(\mathbf{a}+\mathbf{h})\approx f(\mathbf{a})+\nabla f(\mathbf{a})\cdot \mathbf{h}
 $$
 
-The gradient is the vector of partial derivatives:
+The gradient is the vector of partial derivatives In different axis separately:
 
 $$
 \nabla f(\mathbf{a})=
@@ -84,9 +90,9 @@ One important caveat: continuity is not enough. The function must be differentia
 
 ## Directional Derivative
 
-The partial derivatives measure change along the coordinate axes. But we can move in any direction, not just along the axes. The directional derivative asks:
+Each partial derivative measures change along the coordinate axes. But we can move in any direction, not just along the axes. The directional derivative asks:
 
-> If I take a tiny step from point $\mathbf{a}$ in a chosen direction, how fast does the function value change?
+> If I take a tiny step from point $\mathbf{a}$ in a **chosen direction**, how fast does the function value change?
 
 Let $\hat{\mathbf{u}}$ be a unit vector pointing in the chosen direction. Unit vector means:
 
@@ -152,81 +158,7 @@ D_{\hat{\mathbf{u}}}f(\mathbf{a})
 \frac{\partial f}{\partial y}u_y
 $$
 
-## A More Formal Version
 
-The derivation above leaned on an approximation sign. Here is the same argument made precise. If $f$ is differentiable at $\mathbf{a}$, then by definition:
-
-$$
-\lim_{\mathbf{x}\to\mathbf{a}}
-\frac{
-\left|
-f(\mathbf{x})-
-\left(f(\mathbf{a})+\nabla f(\mathbf{a})\cdot(\mathbf{x}-\mathbf{a})\right)
-\right|
-}{
-\|\mathbf{x}-\mathbf{a}\|
-}
-=0
-$$
-
-This says the error of the linear approximation shrinks faster than the input step length itself.
-
-Now restrict the movement to one direction. Choose:
-
-$$
-\mathbf{x}=\mathbf{a}+h\hat{\mathbf{u}}
-$$
-
-Then:
-
-$$
-\mathbf{x}-\mathbf{a}=h\hat{\mathbf{u}}
-$$
-
-and because $\hat{\mathbf{u}}$ is a unit vector:
-
-$$
-\|h\hat{\mathbf{u}}\|=|h|
-$$
-
-So the differentiability condition becomes:
-
-$$
-\lim_{h\to0}
-\frac{
-\left|
-f(\mathbf{a}+h\hat{\mathbf{u}})
--f(\mathbf{a})
--h\nabla f(\mathbf{a})\cdot\hat{\mathbf{u}}
-\right|
-}{
-|h|
-}
-=0
-$$
-
-This means:
-
-$$
-\lim_{h\to0}
-\left|
-\frac{f(\mathbf{a}+h\hat{\mathbf{u}})-f(\mathbf{a})}{h}
--
-\nabla f(\mathbf{a})\cdot\hat{\mathbf{u}}
-\right|
-=0
-$$
-
-Therefore:
-
-$$
-D_{\hat{\mathbf{u}}}f(\mathbf{a})
-=
-\lim_{h\to0}
-\frac{f(\mathbf{a}+h\hat{\mathbf{u}})-f(\mathbf{a})}{h}
-=
-\nabla f(\mathbf{a})\cdot\hat{\mathbf{u}}
-$$
 
 ## Why the Gradient Points in the Direction of Steepest Ascent
 
@@ -249,6 +181,8 @@ $$
 =
 \|\nabla f(\mathbf{a})\|\|\hat{\mathbf{u}}\|\cos(\theta)
 $$
+
+This is just the geometric definition of the dot product: for any two vectors, the dot product equals the product of their lengths times the cosine of the angle $\theta$ between them. It follows directly from the law of cosines applied to the triangle formed by the two vectors and the vector connecting their tips.
 
 Because $\hat{\mathbf{u}}$ is a unit vector:
 
@@ -362,6 +296,27 @@ $$
 Moving only in the $y$ direction gives a change rate of $4$. Moving in the gradient direction gives a change rate of $5$.
 
 This works because both directions have total length 1, but the gradient direction spreads that unit-length movement across both coordinates. It is not moving "more than one unit" in total. It is spending its unit of movement where it pays off: partly in $x$, partly in $y$, in proportion to how much each partial derivative contributes. That balanced allocation beats putting everything into the single largest component.
+
+### An Intuitive Analogy: Splitting a Fixed Budget
+
+The same "balanced beats extreme" pattern shows up in plain arithmetic. Suppose you must split the number $10$ into two positive parts, $a$ and $b$, with $a+b=10$, and your goal is to make the product $a\times b$ as large as possible. A few options:
+
+$$
+1\times9=9
+\qquad
+2\times8=16
+\qquad
+5\times5=25
+$$
+
+The most lopsided split, $1\times9$, wastes most of the budget: one side is huge, but the other is barely contributing, and the product suffers. The balanced split, $5\times5$, uses the same total budget of $10$ far more effectively and produces the largest product.
+
+The unit vector $\hat{\mathbf{u}}$ works under an analogous constraint. Its "budget" is not a sum but a fixed length: $\|\hat{\mathbf{u}}\|=\sqrt{u_x^2+u_y^2}=1$ (equivalently, $u_x^2+u_y^2=1$). Choosing $\hat{\mathbf{u}}=(0,1)$ is the geometric equivalent of the $1\times9$ split — all of the movement budget goes into $y$, and none is left to capture the $x$-component of the gradient, even though that component ($3$, in the earlier example) still had value to offer. Choosing $\hat{\mathbf{u}}=(0.6,0.8)$, the gradient's own direction, is the equivalent of the balanced $5\times5$ split: the fixed unit length is divided between $x$ and $y$ in proportion to how much each one actually contributes to the change in $f$, so nothing is wasted.
+
+That is the core intuition behind why the gradient direction wins: it is not "spending more," it is spending the same fixed budget more wisely, in proportion to where the payoff actually is.
+
+In effect, splitting the budget across directions lets the movement in each direction multiply with the movement in the others, so their contributions reinforce one another rather than a single axis carrying the whole step alone.
+
 
 ## Summary
 
