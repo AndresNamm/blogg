@@ -1,367 +1,1353 @@
-- [References](#references)
-- [Projection Topic](#projection-topic)
-- [**PROJECTION TOPIC** Projection | Coursera](#projection-topic-projection--coursera)
-- [**CHANGE OF BASIS**](#change-of-basis)
-- [NURGA TULETUSKÄIK](#nurga-tuletuskäik)
-- [**MIKS ON NURK SEOTUD SIINUSE VÕI KOOSINUSEGA?**](#miks-on-nurk-seotud-siinuse-või-koosinusega)
-- [OTHER WAYS TO THINK ABOUT ANGLE](#other-ways-to-think-about-angle)
-  - [ANGLE IDEA](#angle-idea)
-    - [DERIVATION OF ANGLE BETWEEN VECTORS FROM COSINE RULE - ML MATH COURSE](#derivation-of-angle-between-vectors-from-cosine-rule---ml-math-course)
-- [ANGLE PROPERTIES](#angle-properties)
-- [PREREQUISITES FOR ANGLE](#prerequisites-for-angle)
-  - [DOT PRODUCT AND LENGTH](#dot-product-and-length)
-  - [CAUCHY SWARCH](#cauchy-swarch)
-  - [TRIANGLE INEQUALITY](#triangle-inequality)
-  - [REMINDER OF COSINE AND SINUS](#reminder-of-cosine-and-sinus)
-  - [**COSINE RULE**](#cosine-rule)
-- [Arccosine](#arccosine)
-- [Understanding the Angle Between Rays and the Arccosine Function](#understanding-the-angle-between-rays-and-the-arccosine-function)
-  - [The Angle Between Two Rays Formula](#the-angle-between-two-rays-formula)
-    - [Breakdown of the Formula:](#breakdown-of-the-formula)
-  - [What is the Arccosine ($\\arccos$) Function?](#what-is-the-arccosine-arccos-function)
-    - [1. The "Reverse" Function](#1-the-reverse-function)
-    - [2. Calculus Definition (Integral)](#2-calculus-definition-integral)
-    - [3. Infinite Series (How Computers Calculate It)](#3-infinite-series-how-computers-calculate-it)
-
-
-
-If you look at the history of algebra and geometry that leads to vector spaces:
-
-### Historical Milestones
-
-- **570 BCE:** Pythagoras’ theorem
-- **300 BCE:** Euclidean geometry (pre‐vectors)
-- **17th Century (1637):** Cartesian coordinates introduced by Descartes
-    - Enabled analytic geometry (e.g. circle: x² + y² = 4 )
-    - Development of polar coordinates
-- **19th Century:** Formal theory of vector spaces (Cauchy, Peano)
-
-You will see how the angle we know from ancient geometry has been also defined in the algebraic world in a way the properties work in both. Essentially the connection to geometric intuition is established because this algebraic definition successfully captures and generalizes the properties of angles we are familiar with from traditional Euclidean geometry. Essentially you can generalize the geometric world tor alegbra. Thanks Descartes for doing this. 
-
-https://miro.com/app/live-embed/uXjVIlruzkc=/?embedMode=view_only_without_ui&moveToViewport=595%2C55%2C964%2C929&embedId=161538425906
-
-# References
-
-https://miro.com/app/board/uXjVIlruzkc=/?share_link_id=571311439815
-
-# Projection Topic
-
-
-# **PROJECTION TOPIC** Projection | Coursera
-
-We have 2 vectors, s and r. We are looking for s projection (Shade) to r. Aka how much s moves in direction to r.  
-
-!Untitled
-
-1. If we look at the picture, then s is hypotenuse and its projection to r is $\theta$ adjacent(KÜLGNEV) side. 
-2. $cos (\theta) = \frac{adj}{hyp} = \frac{\text{|projection vector|}}{|s|} => |s| cos(\theta)   = \text{|projection vector|}$  
-3. From the  angle derivation based on cosine rule  we get $s \cdot r = |r||s|cos(\theta)$
-4. From previous we know $|s|cos(\theta)=|\text{projection vector}|$
-5. Thus $s \cdot r = |r||\text{projection vector}|$
-6. Thus $\frac{s\cdot r}{|r|} = \text{|projection vector|} = \text{Projection length of s onto r}$ (**Scalar Projection**)  **The lengths units are in standard basis here. Intuitiivselt ma leian skalaarkoruutisega kui palju vektor s läheb samal suunal, mis vektor r ning jagamisega tagan, et see “KUI PALJU” oleks standardbaasi mõõtühikutes.** 
-    1. if we are projecting on standard basis , then $|r|=1$ and projection to it becomes just regular dot product $s \cdot r$
-7. $\frac{r}{|r|}= \text{Vector going within the same direction as r but with length 1}$  (Unit vector in direction of r
-    1. Proof :$\sqrt{\sum{\frac{r_i}{|r|}}^2}=\sqrt{\frac{1}{|r|^2}\sum{r_i}^2}=\sqrt{\frac{1}{\sqrt{\sum{r_i^2}}^2}\sum{r_i}^2}=\sqrt{\frac{1}{\sum{r_i^2}}\sum{r_i}^2}=\sqrt{1}=1$
-8. Scalar Projection * Unit Vector in direction R = **Vector projection = $\frac{s\cdot r}{|r|} \cdot \frac{r}{|r|}$** 
-9. Projecting to different basis $\frac{s\cdot r}{|r|{|r|}}$ - explanation below.  **Opposing to regular projection, the length units are of r basis length here.** 
-
-# **CHANGE OF BASIS**
-
-In the example above we are going to change the basis of the vector $r_e$ to use the basis $\hat{b_1},\hat{b_2}$ 
-
-For this we first need to have the **new** basis $\hat{b_1},\hat{b_2}$ defined with $\hat{e}$ coordinates.
-
-In this case 
-
-$b_1e= \begin{bmatrix}
-    2 \\ 
-    1 \\ 
-\end{bmatrix}=2*\hat{e_1}+1*\hat{e_2}$
-
-$b_2e= \begin{bmatrix}
-    -2 \\ 
-    4 \\ 
-\end{bmatrix}=-2*\hat{e_1}+4*\hat{e_2}$
-
-Now we need to derive how r is looking like when described by basis b1 and b2 
-
-That means 
-
-- We need to describe r based on how much it goes towards $b_{1}$ and $b_2$ with length units of $b_{1}$ and $b_{2}$ accordingly.
-
-To describe r by basis b for both b1 and b2 I need to 
-
-1. Get scalar projection of r to $b_i$. $=> \frac{r \cdot b_i}{|b_i|}$
-2. Divide that scalar projection by $|b_i|$. We **need** to do this to describe direction to $b_i$ with **length** units of **basis** $b_i$ instead of **basis** $e_i$
-
-**NB, et antud projektsiooni funktsionaalsus toimuks baasivahetuse puhul peavad uued baasivektorid olema omavahel risti.**
-
-
-# NURGA TULETUSKÄIK
-
-Suures plaanis tasandil defineeritu nurgast vektorite vahelise nurgani minemine näeb välja midagi sellist, kus me liigume geomeetrilisest ruumist **eukleidilisse** vektorruumi. Me kasutame midagi sellist nagu isomorfimismid, kus me toome mingist ruumist omadused üle.
-
-Eukleidilises vektorruumis on meie jaoks defineeritud ära 
-
-- skalaarkorrutis
-- pikkus
-
-Nende abil saamegi **defineerida** nurga. 
-
-!Untitled
-
-Algebraliselt on nurk 2 vektori vahel defineerimiseks , oletame et need vektorid on **a ja b**
-
-Oletame, et meil on 3 vektor
-
-- a-b
-
-Ja oletame, et meil on pikkus defineeritud vektorrruumis. Selleks on 
-
-$\sqrt{a\cdot a}$
-
-Ja me mõõdame iga elemendi pikkust
-
-- a
-- b
-- a-b
-
-KhanAcademys nüüd tõestatakse, et selliste pikkustega kolmnurka alati võimalik moodustada. Tõestamine kasutades teoreemi 
-
-> (triangle inequality) $||x+y|| ≤||x||+||y||$ link
-> 
-
-- Ei kehti ||a|| > ||b|| + ||a-b||
-    - ||a|| = ||b+(a-b)|| ≤ ||b|| + ||a-b|| because of triangle inequality $\cdot$
-- Ei kehti ||b|| > ||a|| + ||a-b||
-    - ||b||=||a+(b-a)||
-        - ||a-b||=||b-a|| ⇒ ||a|| + ||a-b|| = ||a|| + ||b-a||
-        - ||a+(b-a)||≤||a|| + ||b-a|| $\cdot$
-- Ei kehti ||a-b|| > ||a|| + ||b||
-    - ||b+(a-b)+a+(b-a)|| = ||a+b||
-    - ||a+b||≤||a||+||b|| $\cdot$
-    
-
-Kui me oleme selle tõestanud, siis saame omadust, et võimalik on moodustada kolmnurka kasutada ära järgmistes sammudes. 
-
-*Okei, aga kas on võimalik moodustada äkki mitut sellist kolmnurka? Nii, et a ja b vahel oleks erinevad nurgad*
-
-- Ei, sest kui a ja b vahel oleks mõni muu nurk ning a ja b pikkused oleks samad, siis sellisel juhul oleks kohe a-b pikkus ka erinev.
-- On võimalik moodustada võrdelist kolmnurka, kus a ja b vaheline nurk on täpselt sama ning pikkused mingi kordajaga vähendatud/ssuurendatud
-
-Kui oleme defineerinud kolmnurga võimalikuse, siis me defineerimegi a,b,a-b vektorite pikkuste **kiirtega** kolmnurga ja **DEFINEERIME,** et nurk **vektori** a ja b vahel on see sama nurk, mis on, nurk a ja b **kiirte** vahel selles samas kolmnurgas
-
-- *NB, siin eristame kontseptuaalselt vektoreid ja tasandil defineeritud kolmnurga kiiri, aga toome läbi isomorfismi tasandil defineeritud reeglid vektorruumi üle ja defineerime selle läbi nurga.*
-
-Edasi saame kasutada koosinuse reeglit, mis kehtib kolmnurkadel. 
-
- 
-
-> $||a-b||^2 = ||a||^2+||b||^2 - 2||a||||b||\cos(\theta),\text{kus }\theta \text{ on nurk a ja b vahel}$ link
-> 
-
-Arvutame selle nüüd lahti
-
-$(a-b)\cdot(a-b) = a\cdot a + b\cdot  b - 2||a||||b||cos(\theta)$
-
-$a\cdot a -2a\cdot b +  b\cdot  b = a\cdot a + b\cdot  b - 2||a||||b||cos(\theta)$
-
-$(a\cdot b)  =  ||a||||b||cos(\theta)$
-
-$\frac{(a\cdot b)}{||a||||b||}  =  cos(\theta)$ ⇒ a ja b vahelise nurga koosinus
-
-if a=cb and c>0 ⇒ $cos(\theta)=1$  ⇒ $\theta=0\degree$ 
-
-if a=cb and c<0 ⇒  $cos(\theta)=-1$  ⇒ $\theta=180\degree$
-
-!Untitled
-
- 
-
-Proof: Angle Between Two Vectors (youtube.com)
-
-# **MIKS ON NURK SEOTUD SIINUSE VÕI KOOSINUSEGA?**
-
-1. Kui me võtame ringi, siis olenemata ringi suurusest on ringi ümbermõõdu ja diameetri vaheline jagatis $\pi$
-2. Me saame sarnast asja teha täisnurkse kolmnurga puhul. Kui me võtame täisnurkse kolmnurga, siis on olenemata kolmnurga suurusest nurga $\theta$ siinus $\frac{opposite}{hypothenus}$koosinus = $\frac{adjacent}{opposite}$ sama kõikide täisnurksete kolmnurkade $\theta$ puhul . See on loogiline, sest, kui meil on täisnurkne kolmnurk, mille üks külg on $\theta$ ja teine külg on 90 $\degree$, siis kolmas külg on alati $180\degree-90\degree-\theta\degree$ ja teiste samade nurkadega kolmnurk on lihtsalt kolmnurk, kus iga külg on mingi korrutis eelnevast kolmnurgast. S.t suhted külgede vahel jäävad samaks. S.t ka koosinused jms asjad jäävad samask.  SARNASED KOLMNURGAD JA SARNASUSE TUNNUSED - Matemaatika - 9. klass | TaskuTark
-
-**Selle järgi on meil siis tekkinud mäping $\theta$ maailmast $\sin$ ja $\cos$ väärtustesse ja täisnurkse kolmnurga loogikast ka tagasi.** 
-
-Kristoga tuli jutuks, et seda funktsiooni cos v sinus saab üles ehitada näiteks kuidagi Taylori rea abil .. S.t kui meil on kahe vektori vaheline koosinus defineeritud, siis me saame sellest tuletada ka nurga $\theta$
-
-# OTHER WAYS TO THINK ABOUT ANGLE
-
-## ANGLE IDEA
-
-Nurk on defineeritud **TASANDIL** kui lõikekoht 2 kiire vahel. Seda mõõdetakse kraadides. See on inimeste poolt kasutusele võetud mõõteühik. Nagu meetrid või jardid.  Nurk on seotud siinuse ja koosinusega ning vastavate täisnurkse kolmnurga vahega. 
-
-Tekib suhe 
-
-$cos(\theta) = \frac{adjacent}{hypothenus} => arcos(cos(\theta))=\theta$ 
-
- kasutades seda suhet saame defineerida ära ka nurga kahe vektori vahel
-
-### DERIVATION OF ANGLE BETWEEN VECTORS FROM COSINE RULE - ML MATH COURSE
-
-Siin ma rääkisin Kristoga ühe korra ja tuli selline põnev teema, et kui elementaargeomeetrias on defineeritud mingi tasandi, selle peal nurk jms põnevad asjad, siis me teeme selle tasandist isomorfimismie $\R_n$ ruumi ja “avastame” need omadused seal. Allpool oleva ongi seletus, kuidas me kausutades vektorruumis ära pikkust ning koosinusteooreemi, saame me leida 2 vektori vahelise nurga. 
-
-Alloleval pildil defineerime me kahe vektori vahelise nurga
-
-1. Esmalt me kasutame ära seda, et oleme defineerinud vektorite pikkuses. 
-2. Sealt edasi saame kasutada ära nüanssi, et meil tekib vektoritest s,r ja r-s kolmnurk
-3. Kuivõrd meil on tekkinud kolmnurk, siis saame kasutada ära koosinuse teoreemi - **Siit me kaasame juba mängu koosinuse ja s.t ka nurga.** 
-
-!Untitled
-
-PS: Cosine **rule does not need one angle of the triangle to be 90 degrees**
-
-Here we have as vectors r, s and r-s. We separate these from a, b and c
-
-1. cosine rule $c^2=a^2+b^2 - 2ab*cos(\theta)$
-2. $|r-s|^2=|r|^2+|s|^2 -2|r||s|cos\theta$
-3. If we transform cosine rule  we get $r \cdot s = |r||s|cos(\theta)$  ⇒ $\frac{r \cdot s}{|r||s|}=cos(\theta)$
-
-# ANGLE PROPERTIES
-
-Based on cosine rules now when  Video to explain this
-
-$\theta=90  \degree => cos(\theta) = 0 => r \cdot s = 0$
-
-$\theta=0  \degree => cos(\theta) = 1 => A \cdot B = |r|*|s|$  (If both vectors are of unit lenth then dot product = 1) 
-
-$\theta=180  \degree => cos(\theta) = -1 => r \cdot s = -|s|*|s|$
-
-# PREREQUISITES FOR ANGLE
-
-## DOT PRODUCT AND LENGTH
-
-V1 PIKKUS = $\sqrt{v_1^2+v_2^2}$ = $\sqrt{v \cdot v}$  , assuming v1 is the multiplier for $e_1$ and v2 is multiplier for $e_2$
-
-Intuitiivselt selgitatakse PIKKUST dot producti kaudu arvutamisel läbi baaside väärtuste kordajate ja Pythagorase teoreemi. St me saame kätte hüpotenuusi
-
- Pythagorase teoreemi **kehtib ainult siis, kui baasid on ortogonaalsed. PYTHAGORAS PROOF** 
-
-!Untitled
-
-Arutelu StackExchangis siin
-
-ORTHOGONAL/NON ORTHOGONAL SPACE VECTOR NORM/LENGTH 
-
-Üldiselt on pikkus siinkohal võetud kui lihtsalt definitsioon. 
-
-- Length/Pikkus on sama mis magnitude/norm
-
-## CAUCHY SWARCH
-
-!Untitled
-
-Võib 
-
-!Untitled
-
-$|a \cdot b| \leq ||a|| \text{ }||b||$ , Is equal when x = cy
-
-Absolute value of dot product between vector a and b is less or equal than the multiplications of their lengths. 
-
-Intuitively 
-
-!Untitled
-
-15.6: Cauchy-Schwarz Inequality - Engineering LibreTexts/15%3A_Appendix_B-_Hilbert_Spaces_Overview/15.06%3A_Cauchy-Schwarz_Inequality)  — Proves quite well. The proof is algerbaic though. Leverages writing out the dot product.
-
-- Proof of the Cauchy-Schwarz inequality (video) | Khan Academy
-- Cauchy Schwarz Inequality | Applications to Problems, and When Equality Occurs (youtube.com)
-
-## TRIANGLE INEQUALITY
-
-||x|| - means lenght of vector
-
-Vector triangle inequality (video) | Khan Academy
-
-$||x+y||\leq||x||+||y||$
-
-!Untitled
-
-- Intuitive through visual interpretation.
-- Proof is rather algebraic. Leverages writing out $|| x + y ||^2$ and Cauchy to build the equation
-    - Equal only if vectors are goin in same direction
-
-!Untitled
-
-## REMINDER OF COSINE AND SINUS
-
-COS is just a relationship between specific 2 sides in a right angled triangle. 
-
-This rule works on right angle triangles .(one angle is 90 degrees)
-
-$cos(\theta)=\frac{adjacent}{hypothenus}$
-
-$sin(\theta)=\frac{opposite}{hypothenus}$
-
-- More thorough explanation
-
-In this case 
-
-$cos(A)=\frac{b}{c}$
-
-$cos(B)=\frac{a}{c}$
-
-!Untitled
-
-## **COSINE RULE**
-
-This applies to all triangles, not only right triangles.  
-
-!Untitled
-
- 
-
-NB — C is the opposite corner of side c
-
-- Proof of the Law of Cosines - Math Open Referenc  Proof that leverages Pythagoras theorem
-- PYTHAGORAS PROOF
-
-
-
-# Arccosine
-
-# Understanding the Angle Between Rays and the Arccosine Function
-
-## The Angle Between Two Rays Formula
-When determining the angle $\theta$ between two rays (or vectors) $\mathbf{a}$ and $\mathbf{b}$ starting from the exact same point (like a camera's pinhole), we use the vector dot product formula:
+# Angles Between Vectors
+
+The central idea of this post is:
+
+> An inner product turns algebraic vectors into geometric objects. Once an
+> inner product gives us lengths and alignment, we can define the angle between
+> two nonzero vectors by
+>
+> $$
+> \theta
+> =
+> \arccos\left(
+> \frac{\mathbf a\cdot\mathbf b}
+> {\|\mathbf a\|\|\mathbf b\|}
+> \right).
+> $$
+
+This formula is not an arbitrary rule. It follows from the ordinary law of
+cosines, and every part of it has a specific purpose:
+
+- $\mathbf a\cdot\mathbf b$ measures directional alignment and also depends on
+  the vectors' lengths.
+- Dividing by $\|\mathbf a\|\|\mathbf b\|$ removes the lengths.
+- The resulting number is $\cos\theta$.
+- $\arccos$ recovers the unique angle $\theta\in[0,\pi]$.
+
+This post develops that argument carefully and then connects it to projection
+and change of basis.
+
+## Contents
+
+1. [From vector spaces to geometry](#from-vector-spaces-to-geometry)
+2. [The dot product and norm](#the-dot-product-and-norm)
+3. [Why the normalized dot product is a cosine](#why-the-normalized-dot-product-is-a-cosine)
+4. [Defining the angle](#defining-the-angle)
+5. [Derivation from the law of cosines](#derivation-from-the-law-of-cosines)
+6. [What the sign of the dot product means](#what-the-sign-of-the-dot-product-means)
+7. [Worked angle examples](#worked-angle-examples)
+8. [Projection](#projection)
+9. [Projection is not change of basis](#projection-is-not-change-of-basis)
+10. [The inequalities behind the construction](#the-inequalities-behind-the-construction)
+11. [A closer look at arccos](#a-closer-look-at-arccos)
+12. [Summary](#summary)
+
+## From vector spaces to geometry
+
+A vector space by itself only provides algebraic operations:
+
+- vectors can be added;
+- vectors can be multiplied by scalars.
+
+Those operations alone do **not** define length, perpendicularity, distance, or
+angle. To obtain Euclidean geometry, we equip the vector space with an **inner
+product**.
+
+For real coordinate vectors in $\mathbb R^n$, the standard inner product is the
+dot product:
 
 $$
-\theta = \arccos\left(\frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}\|}\right)
+\mathbf a\cdot\mathbf b
+=
+\sum_{i=1}^n a_i b_i.
 $$
 
-### Breakdown of the Formula:
-1. **The Denominator ($\|\mathbf{a}\| \|\mathbf{b}\|$):** This represents the lengths (magnitudes) of the two vectors. Dividing the top part by these lengths "normalizes" the vectors so they both have a length of exactly $1$. This ensures we are only comparing their *directions*, not how long they are.
-2. **The Dot Product ($\mathbf{a} \cdot \mathbf{b}$):** This is a mathematical way of measuring how "aligned" the two directions are:
-   - $1$ if they point in the exact same direction.
-   - $0$ if they are exactly perpendicular ($90^\circ$ apart).
-   - $-1$ if they point in exactly opposite directions.
-3. **The Cosine Relationship:** It is a fundamental law in geometry that the dot product of two normalized vectors is exactly equal to the cosine of the angle between them: $\cos(\theta) = \text{alignment ratio}$.
-4. **The Inverse Cosine ($\arccos$):** This function goes backward. It asks, "If the cosine of an angle is this number, what is the angle?" to extract the exact angle $\theta$ in radians.
+From the inner product we define:
 
----
-
-## What is the Arccosine ($\arccos$) Function?
-While it may seem like a formal "magic button" on a calculator, $\arccos$ is a strictly defined mathematical function.
-
-### 1. The "Reverse" Function
-At its core, $\arccos$ is defined purely as the inverse of the $\cos$ function. 
-- **Domain (input):** Strictly between $-1$ and $1$.
-- **Range (output):** Exactly between $0$ and $\pi$ radians ($0^\circ$ to $180^\circ$).
-
-### 2. Calculus Definition (Integral)
-If you want to look under the hood to see how it's structurally defined without referencing the cosine function, it is defined in calculus as the area under a specific curve:
 $$
-\arccos(x) = \int_{x}^{1} \frac{1}{\sqrt{1 - t^2}} dt
+\|\mathbf a\|
+=
+\sqrt{\mathbf a\cdot\mathbf a}
 $$
-This tells a computer or mathematician exactly how to calculate it from scratch without a geometry cheat sheet.
 
-### 3. Infinite Series (How Computers Calculate It)
-It does not have a simple algebra formula like $3x + 2$. It is a "transcendental" function. When your computer or calculator computes $\arccos(x)$, it actually approximates it using an infinite series (adding up smaller and smaller fractions):
+and
+
 $$
-\arccos(x) = \frac{\pi}{2} - \left( x + \frac{1}{2}\frac{x^3}{3} + \frac{1 \cdot 3}{2 \cdot 4}\frac{x^5}{5} + \frac{1 \cdot 3 \cdot 5}{2 \cdot 4 \cdot 6}\frac{x^7}{7} + \dots \right)
+d(\mathbf a,\mathbf b)
+=
+\|\mathbf a-\mathbf b\|.
 $$
+
+So the logical order is
+
+$$
+\text{inner product}
+\Longrightarrow
+\text{norm}
+\Longrightarrow
+\text{distance and angle}.
+$$
+
+This distinction matters. An arbitrary vector-space isomorphism preserves
+addition and scalar multiplication, but it need not preserve angles or
+lengths. A map that also preserves the inner product is an **isometry**. It is
+the inner-product-preserving structure, rather than coordinates alone, that
+transports Euclidean geometry into an algebraic model.
+
+## The dot product and norm
+
+Consider
+
+$$
+\mathbf v=(v_1,\ldots,v_n).
+$$
+
+Its squared length is
+
+$$
+\|\mathbf v\|^2
+=
+\mathbf v\cdot\mathbf v
+=
+v_1^2+\cdots+v_n^2.
+$$
+
+Therefore
+
+$$
+\|\mathbf v\|
+=
+\sqrt{v_1^2+\cdots+v_n^2}.
+$$
+
+In $\mathbb R^2$, this is exactly the Pythagorean theorem:
+
+$$
+\|\mathbf v\|
+=
+\sqrt{v_1^2+v_2^2}.
+$$
+
+The familiar coordinate formula assumes that the coordinate axes form an
+**orthonormal basis**:
+
+- the basis vectors are perpendicular;
+- every basis vector has length $1$.
+
+If the basis is not orthonormal, the geometry is still valid, but the simple
+sum-of-squares coordinate formula must be replaced by a formula involving the
+basis's Gram matrix. We return to this in
+[Projection is not change of basis](#projection-is-not-change-of-basis).
+
+## Why the normalized dot product is a cosine
+
+For nonzero vectors $\mathbf a$ and $\mathbf b$, define their normalized
+versions:
+
+$$
+\widehat{\mathbf a}
+=
+\frac{\mathbf a}{\|\mathbf a\|},
+\qquad
+\widehat{\mathbf b}
+=
+\frac{\mathbf b}{\|\mathbf b\|}.
+$$
+
+Both have length $1$. Their dot product is
+
+$$
+\widehat{\mathbf a}\cdot\widehat{\mathbf b}
+=
+\frac{\mathbf a\cdot\mathbf b}
+{\|\mathbf a\|\|\mathbf b\|}.
+$$
+
+The Cauchy-Schwarz inequality says
+
+$$
+|\mathbf a\cdot\mathbf b|
+\leq
+\|\mathbf a\|\|\mathbf b\|.
+$$
+
+Dividing by the positive number $\|\mathbf a\|\|\mathbf b\|$ gives
+
+$$
+-1
+\leq
+\frac{\mathbf a\cdot\mathbf b}
+{\|\mathbf a\|\|\mathbf b\|}
+\leq
+1.
+$$
+
+This is important because $[-1,1]$ is exactly the range of cosine on the angle
+interval $[0,\pi]$.
+
+The normalized dot product is therefore a pure, dimensionless measure of
+directional alignment:
+
+$$
+\frac{\mathbf a\cdot\mathbf b}
+{\|\mathbf a\|\|\mathbf b\|}
+=
+\cos\theta.
+$$
+
+Scaling either vector by a positive number does not change this ratio, because
+the scale factor appears in both the numerator and denominator. That is what
+we want: changing a vector's length should not change its direction.
+
+Normalization also gives a useful picture. Every nonzero vector is moved onto
+the unit sphere while keeping its direction. If
+
+$$
+\mathbf u=\frac{\mathbf a}{\|\mathbf a\|},
+\qquad
+\mathbf v=\frac{\mathbf b}{\|\mathbf b\|},
+$$
+
+then the distance between the resulting points is
+
+$$
+\begin{aligned}
+\|\mathbf u-\mathbf v\|^2
+&=
+\|\mathbf u\|^2+\|\mathbf v\|^2-2\mathbf u\cdot\mathbf v\\
+&=
+2-2\cos\theta\\
+&=
+4\sin^2\left(\frac{\theta}{2}\right).
+\end{aligned}
+$$
+
+Hence
+
+$$
+\|\mathbf u-\mathbf v\|
+=
+2\sin\left(\frac{\theta}{2}\right).
+$$
+
+So the angular separation and the straight-line distance between normalized
+vectors determine one another. Normalizing does not merely simplify the
+formula; it isolates the geometry of direction on the unit sphere.
+
+## Defining the angle
+
+For nonzero vectors $\mathbf a,\mathbf b$ in a real inner-product space, their
+angle is defined as
+
+$$
+\boxed{
+\theta
+=
+\arccos\left(
+\frac{\mathbf a\cdot\mathbf b}
+{\|\mathbf a\|\|\mathbf b\|}
+\right)
+}
+$$
+
+with
+
+$$
+0\leq\theta\leq\pi.
+$$
+
+Equivalently,
+
+$$
+0^\circ\leq\theta\leq180^\circ.
+$$
+
+The angle is not defined if either vector is the zero vector. The zero vector
+has no direction, and the formula would require division by zero.
+
+### Why cosine appears
+
+In a right triangle,
+
+$$
+\cos\theta
+=
+\frac{\text{adjacent side}}{\text{hypotenuse}},
+\qquad
+\sin\theta
+=
+\frac{\text{opposite side}}{\text{hypotenuse}}.
+$$
+
+These ratios depend only on the angle, not on the size of the triangle. Any two
+right triangles with the same acute angle are similar, so all corresponding
+side lengths differ by one common scale factor. That factor cancels in the
+ratio.
+
+The right-triangle definition directly covers acute angles. The unit-circle
+definition extends cosine to all angles: the point reached after rotating by
+$\theta$ on the unit circle has coordinates
+
+$$
+(\cos\theta,\sin\theta).
+$$
+
+For an obtuse angle, the horizontal coordinate is negative, which is why its
+cosine and the corresponding dot product are negative.
+
+Cosine therefore creates a size-independent mapping
+
+$$
+\theta\in[0,\pi]
+\longmapsto
+\cos\theta\in[-1,1].
+$$
+
+On this interval cosine is one-to-one, so the mapping can be reversed:
+
+$$
+\cos\theta=x
+\quad\Longleftrightarrow\quad
+\theta=\arccos x.
+$$
+
+## Derivation from the law of cosines
+
+Place $\mathbf a$ and $\mathbf b$ so that both start at the origin. Their tips
+and the origin form a triangle whose side lengths are
+
+$$
+\|\mathbf a\|,
+\qquad
+\|\mathbf b\|,
+\qquad
+\|\mathbf a-\mathbf b\|.
+$$
+
+The side connecting the two tips is represented by either
+$\mathbf a-\mathbf b$ or $\mathbf b-\mathbf a$; both have the same length.
+
+If $\theta$ is the angle between $\mathbf a$ and $\mathbf b$, the law of
+cosines gives
+
+$$
+\|\mathbf a-\mathbf b\|^2
+=
+\|\mathbf a\|^2+\|\mathbf b\|^2
+-2\|\mathbf a\|\|\mathbf b\|\cos\theta.
+\tag{1}
+$$
+
+Now calculate the same left-hand side using the inner product:
+
+$$
+\begin{aligned}
+\|\mathbf a-\mathbf b\|^2
+&=(\mathbf a-\mathbf b)\cdot(\mathbf a-\mathbf b)\\
+&=\mathbf a\cdot\mathbf a
+-2\mathbf a\cdot\mathbf b
++\mathbf b\cdot\mathbf b\\
+&=\|\mathbf a\|^2
+-2\mathbf a\cdot\mathbf b
++\|\mathbf b\|^2.
+\end{aligned}
+\tag{2}
+$$
+
+Equating (1) and (2), then cancelling the common squared-length terms, gives
+
+$$
+-2\mathbf a\cdot\mathbf b
+=
+-2\|\mathbf a\|\|\mathbf b\|\cos\theta.
+$$
+
+Therefore
+
+$$
+\boxed{
+\mathbf a\cdot\mathbf b
+=
+\|\mathbf a\|\|\mathbf b\|\cos\theta
+}.
+$$
+
+For nonzero vectors, division by the two lengths gives
+
+$$
+\boxed{
+\cos\theta
+=
+\frac{\mathbf a\cdot\mathbf b}
+{\|\mathbf a\|\|\mathbf b\|}
+}.
+$$
+
+This derivation explains why the algebraic definition reproduces the geometric
+angle from Euclidean triangles.
+
+## What the sign of the dot product means
+
+Because both vector lengths are nonnegative,
+
+$$
+\operatorname{sign}(\mathbf a\cdot\mathbf b)
+=
+\operatorname{sign}(\cos\theta).
+$$
+
+Consequently:
+
+| Angle | Cosine | Dot product | Interpretation |
+|---|---:|---:|---|
+| $0\leq\theta<\frac{\pi}{2}$ | positive | positive | Similar general direction |
+| $\theta=\frac{\pi}{2}$ | $0$ | $0$ | Perpendicular |
+| $\frac{\pi}{2}<\theta\leq\pi$ | negative | negative | Opposing general directions |
+
+Important special cases are:
+
+$$
+\theta=0
+\Longrightarrow
+\mathbf a\cdot\mathbf b
+=
+\|\mathbf a\|\|\mathbf b\|,
+$$
+
+$$
+\theta=\frac{\pi}{2}
+\Longrightarrow
+\mathbf a\cdot\mathbf b=0,
+$$
+
+and
+
+$$
+\theta=\pi
+\Longrightarrow
+\mathbf a\cdot\mathbf b
+=
+-\|\mathbf a\|\|\mathbf b\|.
+$$
+
+Equality in Cauchy-Schwarz occurs exactly when the vectors are linearly
+dependent:
+
+$$
+\mathbf a=c\mathbf b.
+$$
+
+If $c>0$, they point in the same direction and $\theta=0$. If $c<0$, they
+point in opposite directions and $\theta=\pi$.
+
+## Worked angle examples
+
+### Example 1: a $45^\circ$ angle
+
+Let
+
+$$
+\mathbf a=(1,2),
+\qquad
+\mathbf b=(3,1).
+$$
+
+First calculate the dot product:
+
+$$
+\mathbf a\cdot\mathbf b
+=
+1\cdot3+2\cdot1
+=
+5.
+$$
+
+The lengths are
+
+$$
+\|\mathbf a\|
+=
+\sqrt{1^2+2^2}
+=
+\sqrt5
+$$
+
+and
+
+$$
+\|\mathbf b\|
+=
+\sqrt{3^2+1^2}
+=
+\sqrt{10}.
+$$
+
+Therefore
+
+$$
+\cos\theta
+=
+\frac{5}{\sqrt5\sqrt{10}}
+=
+\frac{5}{\sqrt{50}}
+=
+\frac{1}{\sqrt2}.
+$$
+
+Hence
+
+$$
+\theta
+=
+\arccos\left(\frac1{\sqrt2}\right)
+=
+\frac{\pi}{4}
+=
+45^\circ.
+$$
+
+### Example 2: an obtuse angle
+
+Let
+
+$$
+\mathbf a=(1,0),
+\qquad
+\mathbf b=(-1,\sqrt3).
+$$
+
+Then
+
+$$
+\mathbf a\cdot\mathbf b=-1,
+\qquad
+\|\mathbf a\|=1,
+\qquad
+\|\mathbf b\|=2.
+$$
+
+Thus
+
+$$
+\cos\theta=-\frac12
+$$
+
+and
+
+$$
+\theta
+=
+\arccos\left(-\frac12\right)
+=
+\frac{2\pi}{3}
+=
+120^\circ.
+$$
+
+The negative dot product immediately told us that the angle had to be obtuse.
+
+## Projection
+
+Angles and projections are closely connected, but scalar projection and vector
+projection must be distinguished carefully.
+
+Suppose we want to project a vector $\mathbf s$ onto a nonzero vector
+$\mathbf r$.
+
+### Step 1: normalize the target direction
+
+The unit vector pointing in the direction of $\mathbf r$ is
+
+$$
+\widehat{\mathbf r}
+=
+\frac{\mathbf r}{\|\mathbf r\|}.
+$$
+
+It has length $1$ because
+
+$$
+\left\|
+\frac{\mathbf r}{\|\mathbf r\|}
+\right\|
+=
+\frac{\|\mathbf r\|}{\|\mathbf r\|}
+=
+1.
+$$
+
+### Step 2: calculate the signed scalar projection
+
+The scalar component of $\mathbf s$ in the direction of $\mathbf r$ is
+
+$$
+\operatorname{comp}_{\mathbf r}(\mathbf s)
+=
+\mathbf s\cdot\widehat{\mathbf r}.
+$$
+
+Substituting the unit-vector formula gives
+
+$$
+\boxed{
+\operatorname{comp}_{\mathbf r}(\mathbf s)
+=
+\frac{\mathbf s\cdot\mathbf r}{\|\mathbf r\|}
+}.
+$$
+
+Using the angle identity,
+
+$$
+\frac{\mathbf s\cdot\mathbf r}{\|\mathbf r\|}
+=
+\|\mathbf s\|\cos\theta.
+$$
+
+This number is **signed**:
+
+- positive means the component points along $\mathbf r$;
+- zero means $\mathbf s$ is perpendicular to $\mathbf r$;
+- negative means the component points opposite to $\mathbf r$.
+
+The geometric length of the projected vector is the absolute value
+
+$$
+\left|
+\operatorname{comp}_{\mathbf r}(\mathbf s)
+\right|.
+$$
+
+### Step 3: calculate the vector projection
+
+Multiply the scalar component by the unit direction:
+
+$$
+\operatorname{proj}_{\mathbf r}(\mathbf s)
+=
+\operatorname{comp}_{\mathbf r}(\mathbf s)
+\widehat{\mathbf r}.
+$$
+
+Therefore
+
+$$
+\begin{aligned}
+\operatorname{proj}_{\mathbf r}(\mathbf s)
+&=
+\frac{\mathbf s\cdot\mathbf r}{\|\mathbf r\|}
+\frac{\mathbf r}{\|\mathbf r\|}\\
+&=
+\boxed{
+\frac{\mathbf s\cdot\mathbf r}{\|\mathbf r\|^2}\mathbf r
+}.
+\end{aligned}
+$$
+
+Since $\|\mathbf r\|^2=\mathbf r\cdot\mathbf r$, the same formula is often
+written as
+
+$$
+\boxed{
+\operatorname{proj}_{\mathbf r}(\mathbf s)
+=
+\frac{\mathbf s\cdot\mathbf r}
+{\mathbf r\cdot\mathbf r}\mathbf r
+}.
+$$
+
+### Orthogonal decomposition
+
+Define the remaining perpendicular component by
+
+$$
+\mathbf s_\perp
+=
+\mathbf s-\operatorname{proj}_{\mathbf r}(\mathbf s).
+$$
+
+It is perpendicular to $\mathbf r$:
+
+$$
+\begin{aligned}
+\mathbf s_\perp\cdot\mathbf r
+&=
+\left(
+\mathbf s
+-
+\frac{\mathbf s\cdot\mathbf r}
+{\mathbf r\cdot\mathbf r}\mathbf r
+\right)\cdot\mathbf r\\
+&=
+\mathbf s\cdot\mathbf r
+-
+\frac{\mathbf s\cdot\mathbf r}
+{\mathbf r\cdot\mathbf r}
+(\mathbf r\cdot\mathbf r)\\
+&=0.
+\end{aligned}
+$$
+
+Thus every vector can be split into a parallel part and a perpendicular part:
+
+$$
+\boxed{
+\mathbf s
+=
+\operatorname{proj}_{\mathbf r}(\mathbf s)
++\mathbf s_\perp
+}.
+$$
+
+Because these two parts are perpendicular, Pythagoras gives
+
+$$
+\|\mathbf s\|^2
+=
+\left\|
+\operatorname{proj}_{\mathbf r}(\mathbf s)
+\right\|^2
++\|\mathbf s_\perp\|^2.
+$$
+
+### Projection example
+
+Let
+
+$$
+\mathbf s=(3,4),
+\qquad
+\mathbf r=(2,0).
+$$
+
+The scalar projection is
+
+$$
+\operatorname{comp}_{\mathbf r}(\mathbf s)
+=
+\frac{(3,4)\cdot(2,0)}{\sqrt{2^2}}
+=
+\frac6{2}
+=
+3.
+$$
+
+The vector projection is
+
+$$
+\operatorname{proj}_{\mathbf r}(\mathbf s)
+=
+\frac6{4}(2,0)
+=
+(3,0).
+$$
+
+The perpendicular component is
+
+$$
+\mathbf s_\perp
+=
+(3,4)-(3,0)
+=
+(0,4).
+$$
+
+Indeed,
+
+$$
+(0,4)\cdot(2,0)=0
+$$
+
+and
+
+$$
+5^2=3^2+4^2.
+$$
+
+## Projection is not change of basis
+
+A projection asks:
+
+> What part of a vector points in a chosen direction?
+
+A change of basis asks:
+
+> Which coefficients reproduce the same vector using a different coordinate
+> system?
+
+These questions are related, but they are not identical.
+
+Let
+
+$$
+B=
+\begin{bmatrix}
+\vert & & \vert\\
+\mathbf b_1&\cdots&\mathbf b_n\\
+\vert & & \vert
+\end{bmatrix}
+$$
+
+be the matrix whose columns are the new basis vectors, expressed in standard
+coordinates. To find the coordinate vector $\mathbf c=[\mathbf r]_B$, solve
+
+$$
+B\mathbf c=\mathbf r.
+$$
+
+If $B$ is invertible, then
+
+$$
+\boxed{
+\mathbf c=B^{-1}\mathbf r
+}.
+$$
+
+### Orthogonal basis
+
+If the basis vectors are mutually perpendicular but do not necessarily have
+length $1$, then the coefficient of $\mathbf b_i$ is
+
+$$
+\boxed{
+c_i
+=
+\frac{\mathbf r\cdot\mathbf b_i}
+{\|\mathbf b_i\|^2}
+}.
+$$
+
+The numerator divided by $\|\mathbf b_i\|$ is the scalar projection measured
+in ordinary length units. Dividing once more by $\|\mathbf b_i\|$ converts that
+length into a number of $\mathbf b_i$ basis vectors:
+
+$$
+\frac{\mathbf r\cdot\mathbf b_i}{\|\mathbf b_i\|}
+\cdot
+\frac1{\|\mathbf b_i\|}
+=
+\frac{\mathbf r\cdot\mathbf b_i}{\|\mathbf b_i\|^2}.
+$$
+
+If the basis is **orthonormal**, then $\|\mathbf b_i\|=1$, and this simplifies
+to
+
+$$
+c_i=\mathbf r\cdot\mathbf b_i.
+$$
+
+### Orthogonal-basis example
+
+Take
+
+$$
+\mathbf b_1=
+\begin{bmatrix}
+2\\
+1
+\end{bmatrix},
+\qquad
+\mathbf b_2=
+\begin{bmatrix}
+-2\\
+4
+\end{bmatrix}.
+$$
+
+They are orthogonal because
+
+$$
+\mathbf b_1\cdot\mathbf b_2
+=
+2(-2)+1(4)
+=
+0.
+$$
+
+Let
+
+$$
+\mathbf r=
+\begin{bmatrix}
+4\\
+3
+\end{bmatrix}.
+$$
+
+The first coordinate is
+
+$$
+c_1
+=
+\frac{\mathbf r\cdot\mathbf b_1}{\|\mathbf b_1\|^2}
+=
+\frac{4(2)+3(1)}{2^2+1^2}
+=
+\frac{11}{5}.
+$$
+
+The second coordinate is
+
+$$
+c_2
+=
+\frac{\mathbf r\cdot\mathbf b_2}{\|\mathbf b_2\|^2}
+=
+\frac{4(-2)+3(4)}{(-2)^2+4^2}
+=
+\frac4{20}
+=
+\frac15.
+$$
+
+Therefore
+
+$$
+[\mathbf r]_B
+=
+\begin{bmatrix}
+11/5\\
+1/5
+\end{bmatrix}.
+$$
+
+Checking the result:
+
+$$
+\frac{11}{5}
+\begin{bmatrix}
+2\\
+1
+\end{bmatrix}
++
+\frac15
+\begin{bmatrix}
+-2\\
+4
+\end{bmatrix}
+=
+\begin{bmatrix}
+4\\
+3
+\end{bmatrix}.
+$$
+
+### Nonorthogonal basis
+
+For a nonorthogonal basis, the individual dot-product formula does not work:
+each basis vector's direction overlaps with the others.
+
+We can always use
+
+$$
+\mathbf c=B^{-1}\mathbf r.
+$$
+
+An inner-product formulation uses the Gram matrix
+
+$$
+G_{ij}=\mathbf b_i\cdot\mathbf b_j.
+$$
+
+If
+
+$$
+d_i=\mathbf b_i\cdot\mathbf r,
+$$
+
+then the coordinate vector satisfies
+
+$$
+\boxed{
+G\mathbf c=\mathbf d
+}.
+$$
+
+For an orthogonal basis, $G$ is diagonal, and solving this system produces
+$c_i=(\mathbf r\cdot\mathbf b_i)/\|\mathbf b_i\|^2$. For an orthonormal basis,
+$G=I$.
+
+The Gram matrix also explains how to calculate inner products from coordinates
+in a nonorthonormal basis:
+
+$$
+\mathbf x\cdot\mathbf y
+=
+[\mathbf x]_B^\mathsf T
+G
+[\mathbf y]_B.
+$$
+
+Angles do not change merely because coordinates change. What changes is the
+coordinate formula required to calculate the same inner product.
+
+## The inequalities behind the construction
+
+### Cauchy-Schwarz inequality
+
+For all real inner-product vectors $\mathbf a$ and $\mathbf b$,
+
+$$
+\boxed{
+|\mathbf a\cdot\mathbf b|
+\leq
+\|\mathbf a\|\|\mathbf b\|
+}.
+$$
+
+Here is a direct proof. If $\mathbf b=\mathbf0$, the result is immediate.
+Otherwise, every squared norm is nonnegative, so for any real $\lambda$,
+
+$$
+\|\mathbf a-\lambda\mathbf b\|^2\geq0.
+$$
+
+Choose
+
+$$
+\lambda
+=
+\frac{\mathbf a\cdot\mathbf b}{\|\mathbf b\|^2}.
+$$
+
+Expanding gives
+
+$$
+\begin{aligned}
+0
+&\leq
+\left\|
+\mathbf a
+-
+\frac{\mathbf a\cdot\mathbf b}{\|\mathbf b\|^2}
+\mathbf b
+\right\|^2\\
+&=
+\|\mathbf a\|^2
+-
+\frac{(\mathbf a\cdot\mathbf b)^2}{\|\mathbf b\|^2}.
+\end{aligned}
+$$
+
+Therefore
+
+$$
+(\mathbf a\cdot\mathbf b)^2
+\leq
+\|\mathbf a\|^2\|\mathbf b\|^2.
+$$
+
+Taking square roots gives Cauchy-Schwarz.
+
+This proof has a geometric meaning. The chosen multiple of $\mathbf b$ is the
+projection of $\mathbf a$ onto $\mathbf b$, and a projection cannot be longer
+than the original vector.
+
+### Triangle inequality
+
+For all vectors $\mathbf x$ and $\mathbf y$,
+
+$$
+\boxed{
+\|\mathbf x+\mathbf y\|
+\leq
+\|\mathbf x\|+\|\mathbf y\|
+}.
+$$
+
+Using Cauchy-Schwarz,
+
+$$
+\begin{aligned}
+\|\mathbf x+\mathbf y\|^2
+&=
+(\mathbf x+\mathbf y)\cdot(\mathbf x+\mathbf y)\\
+&=
+\|\mathbf x\|^2
++2\mathbf x\cdot\mathbf y
++\|\mathbf y\|^2\\
+&\leq
+\|\mathbf x\|^2
++2\|\mathbf x\|\|\mathbf y\|
++\|\mathbf y\|^2\\
+&=
+(\|\mathbf x\|+\|\mathbf y\|)^2.
+\end{aligned}
+$$
+
+Both sides are nonnegative, so taking square roots proves the result.
+
+The triangle inequality guarantees that the three lengths
+
+$$
+\|\mathbf a\|,
+\qquad
+\|\mathbf b\|,
+\qquad
+\|\mathbf a-\mathbf b\|
+$$
+
+can form a triangle, possibly a degenerate one when the vectors are parallel.
+For example,
+
+$$
+\|\mathbf a\|
+=
+\|\mathbf b+(\mathbf a-\mathbf b)\|
+\leq
+\|\mathbf b\|+\|\mathbf a-\mathbf b\|.
+$$
+
+The other two triangle inequalities follow in the same way.
+
+### The law of cosines
+
+For a triangle with side lengths $p,q,c$, where the angle $\theta$ lies between
+the sides of lengths $p$ and $q$,
+
+$$
+\boxed{
+c^2
+=
+p^2+q^2-2pq\cos\theta
+}.
+$$
+
+One way to see this is to place the sides as coordinate vectors
+
+$$
+\mathbf p=(p,0),
+\qquad
+\mathbf q=(q\cos\theta,q\sin\theta).
+$$
+
+Then the third side has length $\|\mathbf p-\mathbf q\|$, and
+
+$$
+\begin{aligned}
+c^2
+&=
+(p-q\cos\theta)^2+(q\sin\theta)^2\\
+&=
+p^2-2pq\cos\theta
++q^2(\cos^2\theta+\sin^2\theta)\\
+&=
+p^2+q^2-2pq\cos\theta.
+\end{aligned}
+$$
+
+When $\theta=\pi/2$, the cosine term vanishes and the formula becomes the
+Pythagorean theorem.
+
+## A closer look at arccos
+
+### Why cosine needs a restricted inverse
+
+Cosine is periodic, so it is not one-to-one on all real numbers:
+
+$$
+\cos\theta
+=
+\cos(\theta+2\pi k)
+$$
+
+for every integer $k$. An inverse function cannot choose among infinitely many
+angles unless we restrict the input interval.
+
+On $[0,\pi]$, cosine decreases continuously from $1$ to $-1$. It is therefore
+a bijection
+
+$$
+\cos:[0,\pi]\to[-1,1].
+$$
+
+Its inverse is
+
+$$
+\arccos:[-1,1]\to[0,\pi].
+$$
+
+The endpoints are included:
+
+$$
+\arccos(1)=0,
+\qquad
+\arccos(-1)=\pi.
+$$
+
+### Calculus description
+
+For $-1\leq x\leq1$,
+
+$$
+\boxed{
+\arccos x
+=
+\int_x^1
+\frac{1}{\sqrt{1-t^2}}\,dt
+}.
+$$
+
+This agrees with the inverse-function definition. In the interior
+$-1<x<1$, its derivative is
+
+$$
+\frac{d}{dx}\arccos x
+=
+-\frac1{\sqrt{1-x^2}}.
+$$
+
+The negative derivative matches the fact that $\arccos$ decreases: a larger
+cosine corresponds to a smaller angle on $[0,\pi]$.
+
+### Infinite series
+
+Around $x=0$,
+
+$$
+\arccos x
+=
+\frac{\pi}{2}-\arcsin x,
+$$
+
+where
+
+$$
+\arcsin x
+=
+\sum_{n=0}^{\infty}
+\frac{(2n)!}{4^n(n!)^2(2n+1)}
+x^{2n+1}.
+$$
+
+Thus
+
+$$
+\arccos x
+=
+\frac{\pi}{2}
+-
+\left(
+x+\frac{x^3}{6}
++\frac{3x^5}{40}
++\frac{5x^7}{112}
++\cdots
+\right).
+$$
+
+This series explains how a transcendental function can be approximated using
+arithmetic. Real numerical libraries usually use carefully chosen polynomial
+or rational approximations, identities, and range reduction rather than
+blindly summing this series, especially near $x=\pm1$, where it converges
+slowly and numerical sensitivity is greater.
+
+### Numerical computation
+
+In exact mathematics,
+
+$$
+q
+=
+\frac{\mathbf a\cdot\mathbf b}
+{\|\mathbf a\|\|\mathbf b\|}
+$$
+
+always lies in $[-1,1]$. With floating-point arithmetic, rounding can produce a
+value such as $1+10^{-16}$. Implementations commonly clamp the value before
+calling arccos:
+
+$$
+\theta
+=
+\arccos\bigl(\min(1,\max(-1,q))\bigr).
+$$
+
+A numerically useful alternative is
+
+$$
+\theta
+=
+\operatorname{atan2}\left(
+\sqrt{\max\left(0,
+\|\mathbf a\|^2\|\mathbf b\|^2
+-(\mathbf a\cdot\mathbf b)^2
+\right)},
+\mathbf a\cdot\mathbf b
+\right).
+$$
+
+This formula uses both the cosine-like and sine-like parts of the angle and can
+behave better for angles very close to $0$ or $\pi$.
+
+## Summary
+
+The complete chain is:
+
+$$
+\begin{aligned}
+\text{inner product}
+&\Longrightarrow
+\|\mathbf a\|=\sqrt{\mathbf a\cdot\mathbf a},\\
+\text{Cauchy-Schwarz}
+&\Longrightarrow
+-1\leq
+\frac{\mathbf a\cdot\mathbf b}
+{\|\mathbf a\|\|\mathbf b\|}
+\leq1,\\
+\text{law of cosines}
+&\Longrightarrow
+\frac{\mathbf a\cdot\mathbf b}
+{\|\mathbf a\|\|\mathbf b\|}
+=
+\cos\theta,\\
+\text{inverse cosine}
+&\Longrightarrow
+\theta
+=
+\arccos\left(
+\frac{\mathbf a\cdot\mathbf b}
+{\|\mathbf a\|\|\mathbf b\|}
+\right).
+\end{aligned}
+$$
+
+Projection then follows from the same identity:
+
+$$
+\operatorname{comp}_{\mathbf r}(\mathbf s)
+=
+\frac{\mathbf s\cdot\mathbf r}{\|\mathbf r\|},
+$$
+
+$$
+\operatorname{proj}_{\mathbf r}(\mathbf s)
+=
+\frac{\mathbf s\cdot\mathbf r}{\|\mathbf r\|^2}\mathbf r.
+$$
+
+For change of basis:
+
+$$
+B[\mathbf r]_B=\mathbf r.
+$$
+
+Only for an orthogonal basis may each coordinate be calculated independently
+as
+
+$$
+[\mathbf r]_{B,i}
+=
+\frac{\mathbf r\cdot\mathbf b_i}{\|\mathbf b_i\|^2}.
+$$
+
+These are three connected but distinct ideas:
+
+1. An **angle** compares two directions.
+2. A **projection** extracts the component in one direction.
+3. A **change of basis** expresses the same vector using different coordinate
+   coefficients.
+
+## References
+
+- [Miro board](https://miro.com/app/board/uXjVIlruzkc=/?share_link_id=571311439815)
+- [Miro live view](https://miro.com/app/live-embed/uXjVIlruzkc=/?embedMode=view_only_without_ui&moveToViewport=595%2C55%2C964%2C929&embedId=161538425906)

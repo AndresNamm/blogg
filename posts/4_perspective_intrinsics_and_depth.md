@@ -1,12 +1,14 @@
 # Perspective Projection, Intrinsics, and Depth
 
-This is **Part 4** of a 5-part series:
+This is **Part 4** of the series:
 
 1. [Understanding Camera Coordinate Transformations](1_camera_transformation.md)
 2. [Orthographic Projection? 📸](2_orthographic_projection.md)
 3. [Viewport Transform for Orthographic LiDAR Projection](3_viewport_transform.md)
 4. [Perspective Projection, Intrinsics, and Depth](4_perspective_intrinsics_and_depth.md)
 5. [Orthographic vs Perspective: Scaling, the Perspective Divide, and Getting to Pixels](5_ortho_vs_perspective_scaling.md)
+6. [Measuring Objects Viewed at an Angle in Perspective Images](6_objects_under_angle_perspective.md)
+7. [Z-Depth vs Euclidean Depth in Perspective Projection](7_z_depth_vs_euclidean_depth.md)
 
 ---
 
@@ -15,6 +17,7 @@ This is **Part 4** of a 5-part series:
 - [Perspective Projection, Intrinsics, and Depth](#perspective-projection-intrinsics-and-depth)
 - [Table of Contents](#table-of-contents)
 - [Glossary](#glossary)
+- [Assumptions](#assumptions)
 - [Intro](#intro)
 - [1. The Intrinsic Matrix](#1-the-intrinsic-matrix)
 - [2. Principal Point: `cx`, `cy`](#2-principal-point-cx-cy)
@@ -49,7 +52,11 @@ This is **Part 4** of a 5-part series:
 - **Intrinsic Matrix**: A matrix mapping 2D pixel coordinates to 3D viewing rays, containing the focal length and principal point.
 - **Principal Point ($c_x, c_y$)**: The physical "center of vision" on the sensor; the exact pixel where the camera looks directly straight ahead.
 - **Focal Length ($f_x, f_y$)**: The distance from the pinhole to the virtual image plane, measured in pixel units, which dictates the field of view.
-- **Depth Map**: An array of values matching the image resolution where each pixel encodes the physical distance from the camera to the visible surface.
+- **Depth Map**: An array of values matching the image resolution where each pixel encodes the physical distance from the camera central point to the visible surface.
+
+# Assumptions
+
+- This post assumes that depth is the Euclidean distance from the camera center to the object. Some libraries instead provide Z-depth, measured parallel to the camera's optical axis. See [Z-Depth vs Euclidean Depth in Perspective Projection](7_z_depth_vs_euclidean_depth.md) for the formulas and a worked example.
 
 # Intro
 
