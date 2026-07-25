@@ -1,5 +1,22 @@
 # Derivatives, Directional Derivatives, and the Gradient
 
+## TL;DR
+
+- A derivative measures how a tiny input movement changes a function's output.
+- For several inputs, the gradient stores one partial derivative per input direction.
+- The first-order output change is a weighted sum:
+
+$$
+\Delta f\approx\nabla f(\mathbf{a})\cdot\mathbf{h}
+=
+\sum_i\frac{\partial f}{\partial x_i}h_i
+$$
+
+- The terms add because differentiability gives a **linear** local change map: simultaneous first-order effects combine by addition.
+- A directional derivative measures the change along one chosen unit direction.
+- The gradient points toward steepest ascent; its negative points toward steepest descent.
+- [How Backpropagation Multiplies and Sums Gradients](micrograd_gradient_accumulation.md) applies this local linearity to explain why gradient contributions accumulate in neural-network computation graphs.
+
 The shortest useful definition of a derivative is:
 
 > A derivative tells how much a function's output changes relative to a tiny input movement. It is the ratio of output change to input change.
@@ -87,6 +104,205 @@ $$
 At first, it can feel strange that an arbitrarily complicated function can be reduced to a weighted sum of partial derivatives. The reason is that the derivative is about infinitesimally small movement: around the point $\mathbf{a}$, a differentiable function behaves like its tangent plane. For a finite step, curvature may matter. For an infinitesimal step, only the linear part survives, and that linear part is the derivative.
 
 One important caveat: continuity is not enough. The function must be differentiable at the point, which means precisely that a good local linear approximation exists there.
+
+## Why Multivariable Change Is a Sum
+
+It is useful to state the precise claim first: **the gradient itself is a vector, not a scalar sum**. The sum appears when the gradient acts on a small input movement to predict the resulting scalar output change.
+
+For:
+
+$$
+f(x,y)
+$$
+
+a small movement can be decomposed into separate coordinate movements:
+
+$$
+\mathbf{h}
+=
+\begin{bmatrix}
+h_x\\
+h_y
+\end{bmatrix}
+=
+h_x
+\begin{bmatrix}
+1\\
+0
+\end{bmatrix}
++
+h_y
+\begin{bmatrix}
+0\\
+1
+\end{bmatrix}
+$$
+
+Differentiability means that near the current point $\mathbf{a}$, the output change is described by a linear map $Df(\mathbf{a})$. Because this map is linear, it preserves addition:
+
+$$
+Df(\mathbf{a})[\mathbf{h}]
+=
+Df(\mathbf{a})
+\left[
+h_x
+\begin{bmatrix}
+1\\
+0
+\end{bmatrix}
++
+h_y
+\begin{bmatrix}
+0\\
+1
+\end{bmatrix}
+\right]
+$$
+
+$$
+=
+h_xDf(\mathbf{a})
+\left[
+\begin{bmatrix}
+1\\
+0
+\end{bmatrix}
+\right]
++
+h_yDf(\mathbf{a})
+\left[
+\begin{bmatrix}
+0\\
+1
+\end{bmatrix}
+\right]
+$$
+
+The derivative along the first coordinate axis is $\frac{\partial f}{\partial x}$, and along the second it is $\frac{\partial f}{\partial y}$. Therefore:
+
+$$
+\Delta f
+\approx
+Df(\mathbf{a})[\mathbf{h}]
+=
+\frac{\partial f}{\partial x}h_x
++
+\frac{\partial f}{\partial y}h_y
+$$
+
+This is why the multivariable first-order change is a sum: the tiny movement contains an $x$ component and a $y$ component, and the locally linear model adds their individual effects.
+
+### Why interaction terms disappear at first order
+
+Consider:
+
+$$
+f(x,y)=xy
+$$
+
+Move both inputs:
+
+$$
+f(x+h_x,y+h_y)
+=
+(x+h_x)(y+h_y)
+$$
+
+Expanding gives:
+
+$$
+xy+yh_x+xh_y+h_xh_y
+$$
+
+After subtracting the original value $xy$:
+
+$$
+\Delta f
+=
+yh_x+xh_y+h_xh_y
+$$
+
+The first two terms are the sum predicted by the gradient:
+
+$$
+\frac{\partial f}{\partial x}h_x
++
+\frac{\partial f}{\partial y}h_y
+=
+yh_x+xh_y
+$$
+
+The remaining term $h_xh_y$ multiplies two small movements together. It is a second-order term, so it shrinks faster than either first-order term as the movement approaches zero. The derivative keeps the first-order effects and places everything smaller into the approximation error:
+
+$$
+\Delta f
+\approx
+yh_x+xh_y
+$$
+
+So the sum is not claiming that the complete nonlinear function contains no interactions. It says that, at an infinitesimally small scale, the surviving first-order effects add.
+
+### From coordinate movements to computation-graph paths
+
+The same principle explains gradient accumulation in backpropagation. Suppose one value $x$ affects the loss through two intermediate functions:
+
+$$
+y_1=f_1(x)
+\qquad\text{and}\qquad
+y_2=f_2(x)
+$$
+
+with:
+
+$$
+L=H(y_1,y_2)
+$$
+
+A tiny movement $dx$ changes both branches:
+
+$$
+dy_1\approx\frac{\partial y_1}{\partial x}dx
+\qquad\text{and}\qquad
+dy_2\approx\frac{\partial y_2}{\partial x}dx
+$$
+
+Because the local change of $H$ is linear in its input movements:
+
+$$
+dL
+\approx
+\frac{\partial L}{\partial y_1}dy_1
++
+\frac{\partial L}{\partial y_2}dy_2
+$$
+
+Substituting the two branch changes gives:
+
+$$
+dL
+\approx
+\left(
+\frac{\partial L}{\partial y_1}
+\frac{\partial y_1}{\partial x}
++
+\frac{\partial L}{\partial y_2}
+\frac{\partial y_2}{\partial x}
+\right)dx
+$$
+
+Therefore:
+
+$$
+\frac{\partial L}{\partial x}
+=
+\frac{\partial L}{\partial y_1}
+\frac{\partial y_1}{\partial x}
++
+\frac{\partial L}{\partial y_2}
+\frac{\partial y_2}{\partial x}
+$$
+
+Each product describes one complete path from $x$ to $L$. The products add because changing $x$ activates both paths simultaneously. [How Backpropagation Multiplies and Sums Gradients](micrograd_gradient_accumulation.md) develops this computation-graph interpretation using Micrograd and concrete neural-network examples.
 
 ## Directional Derivative
 
@@ -323,6 +539,8 @@ In effect, splitting the budget across directions lets the movement in each dire
 - A derivative measures output change relative to a tiny input movement.
 - A differentiable function is locally approximated by an affine expression; the linear part of that approximation is the derivative.
 - In many dimensions, the gradient collects the partial derivatives into one vector.
+- The gradient produces a weighted sum because the derivative is a linear map: simultaneous first-order input effects add.
+- In a computation graph, this same rule makes gradient contributions add when several paths connect one value to the loss.
 - A directional derivative measures the change rate along one chosen unit direction.
 - The directional derivative formula is:
 
@@ -361,4 +579,3 @@ In calculus, when people say "local linear approximation", they usually mean the
 $$
 f(x+h)\approx f(x)+\text{linear change}
 $$
-

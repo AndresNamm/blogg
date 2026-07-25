@@ -7,18 +7,19 @@ When learning backpropagation, two rules can initially feel disconnected:
 
 These are not arbitrary implementation details. Multiplication comes from the chain rule, while addition comes from the multivariable chain rule when one value affects the loss through several routes.
 
-This post develops that idea using my [Micrograd from scratch notebook](https://github.com/AndresNamm/nn_zero_to_hero/blob/main/micrograd_from_scratch.ipynb). For the underlying meaning of derivatives and gradients, see [Derivatives, Directional Derivatives, and the Gradient](derivatives_directional_derivatives_and_gradient.md).
+This post develops that idea using my [Micrograd from scratch notebook](https://github.com/AndresNamm/nn_zero_to_hero/blob/main/micrograd_from_scratch.ipynb). The companion post [Derivatives, Directional Derivatives, and the Gradient](derivatives_directional_derivatives_and_gradient.md) develops the underlying calculus intuition: a differentiable multivariable function is locally linear, so simultaneous first-order effects combine as a sum. This post applies that idea to gradient accumulation in computation graphs.
 
 ## Table of Contents
 
 - [1. The Computation Graph](#1-the-computation-graph)
 - [2. Why Backward Traversal Needs the Reverse Order](#2-why-backward-traversal-needs-the-reverse-order)
-- [3. The Chain Rule Multiplies Along a Path](#3-the-chain-rule-multiplies-along-a-path)
-- [4. Gradients Add Where Paths Merge](#4-gradients-add-where-paths-merge)
-- [5. How Micrograd Implements Both Rules](#5-how-micrograd-implements-both-rules)
-- [6. Where Gradient Addition Appears in a Neural Network](#6-where-gradient-addition-appears-in-a-neural-network)
-- [7. Accumulation Within a Graph vs Across Training Steps](#7-accumulation-within-a-graph-vs-across-training-steps)
-- [8. The Rule to Remember](#8-the-rule-to-remember)
+- [3. Local Derivatives vs Global Gradients](#3-local-derivatives-vs-global-gradients)
+- [4. The Chain Rule Multiplies Along a Path](#4-the-chain-rule-multiplies-along-a-path)
+- [5. Gradients Add Where Paths Merge](#5-gradients-add-where-paths-merge)
+- [6. How Micrograd Implements Both Rules](#6-how-micrograd-implements-both-rules)
+- [7. Where Gradient Addition Appears in a Neural Network](#7-where-gradient-addition-appears-in-a-neural-network)
+- [8. Accumulation Within a Graph vs Across Training Steps](#8-accumulation-within-a-graph-vs-across-training-steps)
+- [9. The Rule to Remember](#9-the-rule-to-remember)
 
 ## 1. The Computation Graph
 
@@ -89,7 +90,87 @@ Reverse topological order therefore provides this guarantee:
 
 > Every node propagates its gradient only after all downstream paths have contributed to it.
 
-## 3. The Chain Rule Multiplies Along a Path
+## 3. Local Derivatives vs Global Gradients
+
+Consider one operation inside a larger computation graph:
+
+$$
+y=f(x_1,x_2,\ldots,x_n)
+$$
+
+The operation has **local derivatives**:
+
+$$
+\frac{\partial y}{\partial x_1},
+\frac{\partial y}{\partial x_2},
+\ldots,
+\frac{\partial y}{\partial x_n}
+$$
+
+Each local derivative answers a question about this operation only:
+
+> If this input changes slightly, how much does this function's immediate output change?
+
+The function `f` does not need to know what happens before or after it in the neural network. For example, if:
+
+$$
+y=x_1x_2
+$$
+
+then its local derivatives are simply:
+
+$$
+\frac{\partial y}{\partial x_1}=x_2
+\qquad\text{and}\qquad
+\frac{\partial y}{\partial x_2}=x_1
+$$
+
+A **global gradient**, in the computation-graph sense, connects a value to the chosen final objective `L`:
+
+$$
+\frac{\partial L}{\partial y}
+\qquad\text{or}\qquad
+\frac{\partial L}{\partial x_i}
+$$
+
+It answers a different question:
+
+> If this intermediate value changes slightly, how much does the final loss change after all downstream functions and paths are taken into account?
+
+Micrograd's `Value.grad` stores this global gradient. For an operation producing `out`:
+
+```python
+out.grad
+```
+
+represents:
+
+$$
+\frac{\partial L}{\partial \text{out}}
+$$
+
+The operation's `_backward()` function combines that incoming global gradient with its own local derivative:
+
+$$
+\left.
+\frac{\partial L}{\partial x_i}
+\right|_{\text{through }y}
+=
+\underbrace{\frac{\partial L}{\partial y}}_{\text{incoming global gradient}}
+\underbrace{\frac{\partial y}{\partial x_i}}_{\text{local derivative}}
+$$
+
+The product is one path's contribution to the input's global gradient. If the input is used by several functions, it receives one such contribution from each function, and those contributions are added.
+
+One terminology detail matters: **global gradient does not mean a derivative that is valid globally over the whole function domain**. Every derivative here is still local to the values from the current forward pass. “Global” only means that the derivative measures sensitivity to the final objective rather than sensitivity to one immediate function output.
+
+This separation is what makes reverse-mode automatic differentiation modular:
+
+- Each operation knows only its own local derivatives.
+- The graph traversal supplies the global gradient arriving from downstream.
+- The chain rule combines them into global gradients for the operation's inputs.
+
+## 4. The Chain Rule Multiplies Along a Path
 
 Return to the chain:
 
@@ -142,7 +223,7 @@ input.grad += local_derivative * output.grad
 
 `output.grad` describes how the output affects the final loss. The local derivative describes how the input affects that output. Multiplying them connects the input all the way to the loss.
 
-## 4. Gradients Add Where Paths Merge
+## 5. Gradients Add Where Paths Merge
 
 Now consider a branch:
 
@@ -209,7 +290,7 @@ Forward pass:   one value branches into multiple paths
 Backward pass:  gradients from those paths merge by addition
 ```
 
-## 5. How Micrograd Implements Both Rules
+## 6. How Micrograd Implements Both Rules
 
 For multiplication, the notebook defines the local backward function approximately as:
 
@@ -253,7 +334,7 @@ self.grad = local_derivative * out.grad
 
 The second path would overwrite the first path's contribution. Micrograd would then report only whichever path happened to run last, rather than the total effect on the loss.
 
-## 6. Where Gradient Addition Appears in a Neural Network
+## 7. Where Gradient Addition Appears in a Neural Network
 
 ### One input feeds several neurons
 
@@ -319,7 +400,7 @@ The rule is not limited to fully connected networks:
 
 Whenever a value is reused, its gradient must gather the effect from every use.
 
-## 7. Accumulation Within a Graph vs Across Training Steps
+## 8. Accumulation Within a Graph vs Across Training Steps
 
 There are two different kinds of accumulation, and separating them is important.
 
@@ -349,7 +430,7 @@ The distinction is:
 
 Frameworks such as PyTorch follow the same model. Gradients accumulate by default, and training code explicitly clears them between optimization steps unless accumulation across several batches is intentional.
 
-## 8. The Rule to Remember
+## 9. The Rule to Remember
 
 Backpropagation becomes easier to reason about with three compact rules:
 
