@@ -3,8 +3,9 @@
 ## TL;DR
 
 - A derivative measures how a tiny input movement changes a function's output.
+- Gradient is the derivative at some specific local point
 - For several inputs, the gradient stores one partial derivative per input direction.
-- The first-order output change is a weighted sum:
+- When several inputs change at once, estimate the output change from each input separately, then add those estimates:
 
 $$
 \Delta f\approx\nabla f(\mathbf{a})\cdot\mathbf{h}
@@ -12,7 +13,8 @@ $$
 \sum_i\frac{\partial f}{\partial x_i}h_i
 $$
 
-- The terms add because differentiability gives a **linear** local change map: simultaneous first-order effects combine by addition.
+- **First-order** means keeping the effects proportional to each small input change. Products of small changes are left out because they shrink faster.
+- These first-order effects add because a differentiable function behaves linearly near the current point.
 - A directional derivative measures the change along one chosen unit direction.
 - The gradient points toward steepest ascent; its negative points toward steepest descent.
 - [How Backpropagation Multiplies and Sums Gradients](micrograd_gradient_accumulation.md) applies this local linearity to explain why gradient contributions accumulate in neural-network computation graphs.
@@ -35,7 +37,7 @@ $$
 
 This says: move the input by a very small amount $h$, measure the output change, and divide by the size of the input movement.
 
-Rearranging the same idea gives:
+Rearranging the same idea and removing limit gives:
 
 $$
 f(x+h)\approx f(x)+f'(x)h
