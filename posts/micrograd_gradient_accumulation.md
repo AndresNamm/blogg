@@ -11,15 +11,33 @@ This post develops that idea using my [Micrograd from scratch notebook](https://
 
 ## Table of Contents
 
-- [1. The Computation Graph](#1-the-computation-graph)
-- [2. Why Backward Traversal Needs the Reverse Order](#2-why-backward-traversal-needs-the-reverse-order)
-- [3. Local Derivatives vs Global Gradients](#3-local-derivatives-vs-global-gradients)
-- [4. The Chain Rule Multiplies Along a Path](#4-the-chain-rule-multiplies-along-a-path)
-- [5. Gradients Add Where Paths Merge](#5-gradients-add-where-paths-merge)
-- [6. How Micrograd Implements Both Rules](#6-how-micrograd-implements-both-rules)
-- [7. Where Gradient Addition Appears in a Neural Network](#7-where-gradient-addition-appears-in-a-neural-network)
-- [8. Accumulation Within a Graph vs Across Training Steps](#8-accumulation-within-a-graph-vs-across-training-steps)
-- [9. The Rule to Remember](#9-the-rule-to-remember)
+- [How Backpropagation Multiplies and Sums Gradients](#how-backpropagation-multiplies-and-sums-gradients)
+  - [Table of Contents](#table-of-contents)
+  - [1. The Computation Graph](#1-the-computation-graph)
+  - [2. Why Backward Traversal Needs the Reverse Order](#2-why-backward-traversal-needs-the-reverse-order)
+  - [3. Local Derivatives vs Global Gradients](#3-local-derivatives-vs-global-gradients)
+- [\\right|\_{\\text{through }y}](#right_textthrough-y)
+  - [4. The Chain Rule Multiplies Along a Path](#4-the-chain-rule-multiplies-along-a-path)
+- [\\frac{\\partial L}{\\partial i\_1}](#fracpartial-lpartial-i_1)
+- [\\frac{\\partial i\_2}{\\partial i\_1}](#fracpartial-i_2partial-i_1)
+- [2 \\cdot 7](#2-cdot-7)
+- [\\text{upstream gradient}](#textupstream-gradient)
+  - [5. Gradients Add Where Paths Merge](#5-gradients-add-where-paths-merge)
+- [\\frac{\\partial L}{\\partial x}](#fracpartial-lpartial-x)
+- [\\frac{\\partial L}{\\partial x}](#fracpartial-lpartial-x-1)
+- [1\\cdot w\_1+1\\cdot w\_2](#1cdot-w_11cdot-w_2)
+  - [6. How Micrograd Implements Both Rules](#6-how-micrograd-implements-both-rules)
+  - [7. Where Gradient Addition Appears in a Neural Network](#7-where-gradient-addition-appears-in-a-neural-network)
+    - [One input feeds several neurons](#one-input-feeds-several-neurons)
+    - [One hidden activation feeds the next layer](#one-hidden-activation-feeds-the-next-layer)
+- [\\frac{\\partial L}{\\partial N\_{12}}](#fracpartial-lpartial-n_12)
+    - [Shared parameters receive contributions from every training example](#shared-parameters-receive-contributions-from-every-training-example)
+- [\\frac{\\partial L}{\\partial w}](#fracpartial-lpartial-w)
+    - [The same principle appears in other architectures](#the-same-principle-appears-in-other-architectures)
+  - [8. Accumulation Within a Graph vs Across Training Steps](#8-accumulation-within-a-graph-vs-across-training-steps)
+    - [Required: accumulation within the current computation graph](#required-accumulation-within-the-current-computation-graph)
+    - [Usually unwanted: accumulation from an earlier optimization step](#usually-unwanted-accumulation-from-an-earlier-optimization-step)
+  - [9. The Rule to Remember](#9-the-rule-to-remember)
 
 ## 1. The Computation Graph
 
@@ -51,30 +69,9 @@ The forward pass constructs the graph and calculates its values. The backward pa
 
 ## 2. Why Backward Traversal Needs the Reverse Order
 
-The Micrograd notebook first uses depth-first search to build a topological ordering:
+The Micrograd notebook first uses depth-first search to build a topological ordering and then reverses it. This means in backpropagation gradients for resulting neurons (Loss, final neurons) are calculated before earlier neurons
 
-```python
-visited = set()
-topo = []
-
-def build_topo(node):
-    if node not in visited:
-        visited.add(node)
-        for child in node._prev:
-            build_topo(child)
-        topo.append(node)
-
-build_topo(self)
-```
-
-Because a node is appended only after its inputs have been visited, `topo` orders inputs before results. Backpropagation needs the opposite order:
-
-```python
-self.grad = 1
-
-for node in reversed(topo):
-    node._backward()
-```
+Because a node is appended only after its inputs have been visited, `topo` 
 
 The loss is seeded with:
 
@@ -86,7 +83,7 @@ This simply says that changing `L` by one unit changes `L` by one unit.
 
 The traversal then moves from results toward inputs. This order is essential because an input's `_backward()` function needs its already-calculated gradient with respect to the final loss. A node must first receive all gradient contributions from the nodes that use it. Only then can it propagate the complete gradient farther backward.
 
-Reverse topological order therefore provides this guarantee:
+Reverse dfs therefore provides this guarantee:
 
 > Every node propagates its gradient only after all downstream paths have contributed to it.
 
