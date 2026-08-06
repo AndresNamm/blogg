@@ -26,17 +26,19 @@ This is **Part 4** of the series:
 - [4. Pixel to Ray](#4-pixel-to-ray)
   - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
   - [Pixel to Ray](#pixel-to-ray)
-- [5. Calculating the angle for a given ray from the principal ray](#5-calculating-the-angle-for-a-given-ray-from-the-principal-ray)
-- [6. Where Depth Enters](#6-where-depth-enters)
-- [7. Pixel Physical Size Calculation](#7-pixel-physical-size-calculation)
-  - [Tangent reminder](#tangent-reminder)
-  - [Calculation itself](#calculation-itself)
-- [8. Angular Size Plus Depth Becomes Meters](#8-angular-size-plus-depth-becomes-meters)
-  - [Step 1](#step-1)
-  - [Step 2](#step-2)
-  - [Step 3](#step-3)
-  - [Overall](#overall)
-- [10. The Short Version](#10-the-short-version)
+- [5. Back-Projection into 3D](#5-back-projection-into-3d)
+- [q](#q)
+- [P=Zq](#pzq)
+- [6. Creating a Point Cloud](#6-creating-a-point-cloud)
+- [7. Calculating the Surface Normal and Plane](#7-calculating-the-surface-normal-and-plane)
+  - [Calculate the center](#calculate-the-center)
+  - [Calculate the normal](#calculate-the-normal)
+  - [Create the plane](#create-the-plane)
+- [8. Measuring on the Plane](#8-measuring-on-the-plane)
+  - [Move the image boundary onto the plane](#move-the-image-boundary-onto-the-plane)
+  - [Create a 2D coordinate system on the plane](#create-a-2d-coordinate-system-on-the-plane)
+  - [Calculate length and area](#calculate-length-and-area)
+- [9. The Short Version](#9-the-short-version)
 - [Mermaid Diagrams](#mermaid-diagrams)
   - [Diagram 1](#diagram-1)
 - [References](#references)
@@ -49,14 +51,20 @@ This is **Part 4** of the series:
 
 - **Pinhole (Camera Center)**: The theoretical single point where all incoming light rays intersect before hitting the image sensor.
 - **Virtual Image Plane**: A mathematical construct placed *in front* of the camera center. It represents the image correctly oriented (upright), rather than working with the physically upside-down image on the real sensor.
-- **Intrinsic Matrix**: A matrix mapping 2D pixel coordinates to 3D viewing rays, containing the focal length and principal point.
+- **Intrinsic Matrix**: A matrix that maps camera-space ray directions to image pixels. Its inverse maps pixels back to viewing rays.
 - **Principal Point ($c_x, c_y$)**: The physical "center of vision" on the sensor; the exact pixel where the camera looks directly straight ahead.
 - **Focal Length ($f_x, f_y$)**: The distance from the pinhole to the virtual image plane, measured in pixel units, which dictates the field of view.
-- **Depth Map**: An array of values matching the image resolution where each pixel encodes the physical distance from the camera central point to the visible surface.
+- **Depth Map**: An array matching the image resolution where each pixel encodes the visible surface's depth. In this post, each value is Z-depth: the forward distance to the surface measured parallel to the camera's optical axis.
+- **Back-Projection**: The operation that converts a pixel and its depth into a 3D point in camera coordinates.
+- **Point Cloud**: A collection of reconstructed 3D points.
+- **Surface Normal**: A unit vector perpendicular to a surface or fitted plane.
+- **Plane Coordinates**: A 2D metric coordinate system attached to a 3D plane.
 
 # Assumptions
 
-- This post assumes that depth is the Euclidean distance from the camera center to the object. Some libraries instead provide Z-depth, measured parallel to the camera's optical axis. See [Z-Depth vs Euclidean Depth in Perspective Projection](7_z_depth_vs_euclidean_depth.md) for the formulas and a worked example.
+- This post assumes that the depth map stores Z-depth, measured parallel to the camera's optical axis. It is not the Euclidean distance along the viewing ray, except at the principal point. See [Z-Depth vs Euclidean Depth in Perspective Projection](7_z_depth_vs_euclidean_depth.md) for a detailed comparison.
+- The depth map is registered to the image, so pixel $(x,y)$ and depth $Z(x,y)$ describe the same camera ray.
+- The plane-measurement method assumes that the measured surface is approximately planar. Curved surfaces require a mesh or local surface model.
 
 # Intro
 
@@ -68,7 +76,7 @@ That is why orthographic projection is easier for measurement. Once we know the 
 
 Perspective projection breaks this assumption.
 
-In perspective projection, a pixel is not a fixed-size square in the world. A pixel is more like a small direction coming out of the camera. Close to the camera, that direction covers a small physical area. Far away, the same direction covers a larger physical area. This is exactly how regular photography works. 
+In perspective projection, a pixel is not a fixed-size square in the world. A pixel identifies a viewing ray leaving the camera. To recover metric geometry, we point that ray back into the 3D world and determine where it meets the visible surface.
 
 Parallel train tracks    
 
@@ -76,17 +84,17 @@ Parallel train tracks
 
 This is also how our eyesight works. In real world its not possible to directly obtain ortographic projection.
 
-This is why an RGB-D measurement pipeline becomes important in real world. It combines 
+This is why an RGB-D measurement pipeline becomes important in the real world. It combines 
 
 1. image taken with perspective projection using camera intrinsics
-2. depth data (this can be from lidar, photogrammetry ...)
+2. a Z-depth map (this can be derived from LiDAR, photogrammetry, or another depth source)
 
 
 In essence
 - The intrinsics tell us where a pixel is looking.
-- The depth tells us how far away the object is at that pixel.
+- The Z-depth tells us how far forward the visible surface is at that pixel.
 
-Together they let us estimate how large that pixel is in meters.
+Together they let us reconstruct visible points in 3D. We can then estimate the surface plane and calculate physical dimensions in that plane.
 
 ---
 
@@ -277,26 +285,28 @@ So the virtual image plane is basically the real image plane mirrored through th
 
 ## Pixel to Ray
 
-In practical terms, a ray is built like this
+For Z-depth, it is convenient to build an **unnormalized** camera ray whose forward component is `1`:
 
 ```python
-ray_center = np.array([x - cx, y - cy, fx])
+q = np.array([
+  (x - cx) / fx,
+  (y - cy) / fy,
+  1.0,
+])
 ```
 
-"ray_center" means the point on the virtual image plane that the ray passes through, measured relative to the pinhole/camera center.
-
-The components mean:
+The vector `q` points from the camera center through the pixel. Its components are:
 
 | Term | Meaning |
 |---|---|
-| `x - cx` | horizontal offset from straight ahead |
-| `y - cy` | vertical offset from straight ahead |
-| `fx` | forward direction / focal length in pixel units |
+| `(x - cx) / fx` | horizontal position per unit of forward depth |
+| `(y - cy) / fy` | vertical position per unit of forward depth |
+| `1.0` | one unit forward along the optical axis |
 
 If the pixel is at the principal point ($x = c_x,\ y = c_y$), then:
 
 ```python
-ray_center = [0, 0, fx]
+q = [0, 0, 1]
 ```
 
 That ray points straight forward.
@@ -304,24 +314,16 @@ That ray points straight forward.
 If the pixel is 100 pixels to the right ($x = c_x + 100,\ y = c_y$), then:
 
 ```python
-ray_center = [100, 0, fx]
+q = [100 / fx, 0, 1]
 ```
 
 That ray points forward and slightly right.
 
-So the intrinsic matrix lets us turn a pixel coordinate into a camera ray.
+Any positive multiple of `q` points along the same ray. We deliberately do not normalize it: because its forward component is `1`, multiplying it by a Z-depth $Z$ produces a point whose forward coordinate is exactly $Z$.
 
 This is the first half of the perspective-measurement trick.
 
 Those coordinates do not say where the object is in 3D. They say which direction the camera is looking for that pixel.
-
-After normalization:
-
-```python
-d = normalize([x - cx, y - cy, f])
-```
-
-we get a unit ray direction `d` from the camera center.
 
 So one RGB pixel really means:
 
@@ -330,227 +332,246 @@ So one RGB pixel really means:
 A normal RGB image gives color at each pixel, but it does not give the depth of the visible surface. One pixel therefore corresponds to infinitely many possible 3D points along the same ray (see [Diagram 1](#diagram-1) at the end of this post).
 
 
-# 5. Calculating the angle for a given ray from the principal ray
 
-Once we have a ray, we often want its **angle away from straight ahead**. This is useful because it tells us how far off-axis the camera is looking for a given pixel.
 
-- The ray is built from two pieces of information:
+# 5. Back-Projection into 3D
 
-```text
-pixel offset = how far the pixel is from the principal point
-focal length = forward distance to the virtual image plane
-```
+Projection maps a 3D point to a pixel. **Back-projection** reverses the directional part of that mapping.
 
-These two form a right triangle:
-
-- the **opposite** side is the pixel offset (`x - cx` horizontally, or `y - cy` vertically),
-- the **adjacent** side is the focal length (`fx` or `fy`).
-
-The tangent of the ray angle is then simply the offset divided by the focal length:
+For pixel $(x,y)$, write the homogeneous image coordinate as:
 
 $$
-\tan(\theta_x) = \frac{x - c_x}{f_x}
-\qquad
-\tan(\theta_y) = \frac{y - c_y}{f_y}
+p_h=
+\begin{pmatrix}
+x \\
+y \\
+1
+\end{pmatrix}.
 $$
 
-Taking the inverse tangent gives the angle itself:
+Lets do focal-length scaling:
 
 $$
-\theta_x = \arctan\!\left(\frac{x - c_x}{f_x}\right)
-\qquad
-\theta_y = \arctan\!\left(\frac{y - c_y}{f_y}\right)
+q
+=
+\begin{pmatrix}
+\dfrac{x-c_x}{f_x} \\[6pt]
+\dfrac{y-c_y}{f_y} \\[6pt]
+1
+\end{pmatrix}.
 $$
 
+The vector $q$ is an unnormalized ray in camera coordinates. Every point on that ray has the form:
 
+$$
+P(s)=sq, \qquad s>0.
+$$
 
+A pixel alone therefore does not identify one 3D point. It identifies infinitely many possible points along one ray. The Z-depth value selects the visible point:
 
-A pixel at the principal point gives an offset of `0`, so the angle is `0` (straight ahead). The farther the pixel sits from the principal point, the larger the angle. 
+$$
+P=Zq
+=
+\begin{pmatrix}
+Z\dfrac{x-c_x}{f_x} \\[6pt]
+Z\dfrac{y-c_y}{f_y} \\[6pt]
+Z
+\end{pmatrix}.
+$$
+
+We do not normalize $q$ because its third component must remain `1`. Multiplication by $Z$ then makes the third coordinate of $P$ equal to the supplied Z-depth.
 
 ---
 
-# 6. Where Depth Enters
+# 6. Creating a Point Cloud
 
-The depth data answers a different question:
+Back-project every valid depth pixel to create a point cloud of the visible surface:
 
-How far away is the visible surface at this pixel?
+```python
+def depth_map_to_points(depth, fx, fy, cx, cy, mask=None):
+  valid = np.isfinite(depth) & (depth > 0)
+  if mask is not None:
+    valid &= mask
 
-So for a pixel `(x, y)`, the depth map might say:
+  pixel_y, pixel_x = np.nonzero(valid)
+  z_depth = depth[pixel_y, pixel_x]
 
-```text
-depth = 2.0 meters
-```
- 
-In short
+  point_x = z_depth * (pixel_x - cx) / fx
+  point_y = z_depth * (pixel_y - cy) / fy
 
-- The intrinsic matrix gives the direction.
-
-- The depth map gives the distance.
-
-
-
-This is why LiDAR matters. In a normal RGB image, we see the pixel, but we do not directly know how far away the object is. With LiDAR/depth, we get that missing scalar.
-
-If:
-
-```text
-C = camera center - Also known as the pinhole.
-d = ray normalized
-z = depth obtained
-p = actual 3D point
+  return np.column_stack((point_x, point_y, z_depth))
 ```
 
-then the reconstruction idea is of a point in point cloud is:
+Each row of the result is a point $(X,Y,Z)$ in camera coordinates. Applying an object mask before back-projection keeps only the 3D points associated with that object.
 
-```text
-p = C + z d
-```
-
-
-# 7. Pixel Physical Size Calculation
-
-
-## Tangent reminder
-
-Almost every step in this post uses a right triangle: the **focal length** is the forward (adjacent) side, and the **pixel offset** is the sideways (opposite) side.
-
-The tangent of an angle is just the ratio of those two sides:
-
-$$
-\tan(\theta) = \frac{\text{opposite}}{\text{adjacent}}
-$$
-
-![alt text](images/image.png)
-
-So if we know the pixel offset and the focal length, we get the tangent of the ray angle directly. To recover the angle itself, we use the inverse, the arctangent:
-
-$$
-\theta = \arctan\!\left(\frac{\text{opposite}}{\text{adjacent}}\right)
-$$
-
-Two facts are enough for this tutorial:
-
-- `tan` takes an angle and returns a length ratio. Larger angle, larger ratio.
-- `arctan` does the reverse: it takes a ratio and returns an angle.
-
-That is why pixel offsets divided by focal length give angles via `arctan`, and angles multiplied back through `tan` give physical sizes. Tangent and arctangent are the bridge between pixels and angles in both directions.
-
-## Calculation itself
-
-
-To estimate that pixel footprint, we compare the off-axis angle of one pixel with the off-axis angle of its immediate neighbors.
-From earlier, let $\theta_x$ and $\theta_y$ denote the horizontal and vertical off-axis angles of a ray from the principal point:
-
-$$
-    \theta_x = \arctan\!\left(\frac{x-c_x}{f_x}\right),
-\qquad
-    \theta_y = \arctan\!\left(\frac{y-c_y}{f_y}\right)
-$$
-
-So the one-pixel angular step can also be written as:
-
-$$
-\Delta\theta_x = \left|\arctan\!\left(\frac{x+1-c_x}{f_x}\right) - \arctan\!\left(\frac{x-c_x}{f_x}\right)\right|
-$$
-
-$$
-\Delta\theta_y = \left|\arctan\!\left(\frac{y+1-c_y}{f_y}\right) - \arctan\!\left(\frac{y-c_y}{f_y}\right)\right|
-$$
-
-These two values are the angular width and angular height of that pixel.
-
+For plane estimation, use reliable interior points. Depth near an object boundary may mix foreground and background measurements, so invalid values and outliers should be removed first.
 
 ---
 
-# 8. Angular Size Plus Depth Becomes Meters
+# 7. Calculating the Surface Normal and Plane
 
-After the code has:
+Suppose the reconstructed object is approximately planar, such as the cut face of a log. A plane is determined by one point on the plane and a normal vector perpendicular to it.
 
-- `angle_x_scale` — angular width of the pixel ($\Delta\theta_x$)
-- `angle_y_scale` — angular height of the pixel ($\Delta\theta_y$)
-- `depth` — distance to the surface at that pixel ($d$)
+## Calculate the center
 
-it computes:
+For reconstructed points $P_1,\ldots,P_N$, calculate their centroid:
 
 $$
-\text{width}_m = 2 \, d \, \tan\!\left(\frac{\Delta\theta_x}{2}\right)
+P_0=\frac{1}{N}\sum_{i=1}^{N}P_i.
+$$
+
+The centroid $P_0$ becomes the reference point of the fitted plane.
+
+## Calculate the normal
+
+Center every point around $P_0$ and place the centered coordinates into a matrix:
+
+$$
+A=
+\begin{pmatrix}
+(P_1-P_0)^T \\
+(P_2-P_0)^T \\
+\vdots \\
+(P_N-P_0)^T
+\end{pmatrix}.
+$$
+
+Calculate the singular value decomposition:
+
+$$
+A=U\Sigma V^T.
+$$
+
+The row of $V^T$ corresponding to the smallest singular value is the unit normal $n$. It points in the direction with the least variation among the reconstructed points, which is perpendicular to their best-fitting plane.
+
+```python
+plane_center = points.mean(axis=0)
+centered_points = points - plane_center
+_, _, vh = np.linalg.svd(centered_points, full_matrices=False)
+normal = vh[-1]
+normal /= np.linalg.norm(normal)
+```
+
+The signs of $n$ and $-n$ describe the same plane. If a consistent normal facing the camera is needed, flip it when $n\cdot P_0>0$.
+
+## Create the plane
+
+The fitted plane is:
+
+$$
+n\cdot(P-P_0)=0,
+$$
+
+where $P$ is any point on the plane. Equivalently:
+
+$$
+n\cdot P+d=0,
 \qquad
-\text{height}_m = 2 \, d \, \tan\!\left(\frac{\Delta\theta_y}{2}\right)
+d=-n\cdot P_0.
 $$
 
-## Step 1
+The normal describes the plane's orientation, while $P_0$ or $d$ describes its position in 3D space.
 
-- Division by 2 of the angle: $\dfrac{\Delta\theta}{2}$
- 
-The division by two actually comes from the fact that we have two rays. We calculate the angular width between the two rays, and these rays point to the center of each pixel.For our pixel, this means that we actually care for only the angle between our pixel ray center and our pixel edge.Now we have the angle between the pixel center ray and the pixel edge ray. We use the tangent of that  to get the distance and multiply that with two. 
-
-## Step 2
-
-- $\tan(\theta)$
-  
-with tangent of angle we get relation between opposite side (pixel width) and adjacent side (pixel depth)
-
-## Step 3
-
-- $d\,\tan(\theta)$
-
-$$
-\tan(\theta) = \frac{\text{opposite}}{\text{adjacent}}, \qquad d = \text{adjacent}
-$$
-
-here we leverage the connection tan and angle have with ratio between right triangle sides, if we have ratio and one side available, we can derive the other side.
-
-We multiply the distance by the ratio of opposite/adjacent:
-
-$$
-\text{opposite} = \text{adjacent} \times \frac{\text{opposite}}{\text{adjacent}}
-$$
-
-
-## Overall
-
-The intuition is simple:
-
-> **Physical size grows with distance.**
-
-So for a pixel with the same angular width:
-
-| Distance | Real-world width |
-|---|---|
-| 1 meter | small |
-| 5 meters | larger |
-
-This is the exact point where intrinsics and depth are combined:
-
-- The **intrinsics** produce the angular size.
-- The **depth** scales that angular size into meters.
+For noisy measurements, RANSAC can first remove points that do not belong to the dominant plane. SVD can then refine the plane using the inliers.
 
 ---
 
+# 8. Measuring on the Plane
 
-# 10. The Short Version
+The object may look foreshortened in the image, but its physical width and area belong to the fitted 3D plane. The segmentation boundary must therefore be placed onto that plane before it is measured.
 
-- **The intrinsic matrix tells us:** where is straight ahead, and how much a pixel offset changes the viewing angle.
-- **Depth tells us:** how far away the object is at that pixel.
-- **Together:** intrinsics + depth = a metric interpretation of an image pixel.
+## Move the image boundary onto the plane
+
+For each boundary pixel, calculate its unnormalized ray $q$. A point on the ray is $P(s)=sq$. Substitute this into the plane equation:
+
+$$
+n\cdot(sq-P_0)=0.
+$$
+
+Solving for $s$ gives:
+
+$$
+s=\frac{n\cdot P_0}{n\cdot q}.
+$$
+
+The 3D boundary point on the plane is:
+
+$$
+B=sq.
+$$
+
+Each boundary pixel has a different ray and usually a different value of $s$. This accounts for perspective and for the angle between the camera and the measured plane. If $n\cdot q$ is close to zero, the ray is nearly parallel to the plane and the intersection is unstable.
+
+## Create a 2D coordinate system on the plane
+
+Choose two orthonormal basis vectors $e_1$ and $e_2$ within the plane:
+
+$$
+e_1\cdot n=0,
+\qquad
+e_2=n\times e_1.
+$$
+
+Convert each 3D boundary point $B_i$ into metric plane coordinates:
+
+$$
+u_i=(B_i-P_0)\cdot e_1,
+\qquad
+v_i=(B_i-P_0)\cdot e_2.
+$$
+
+The coordinates $(u_i,v_i)$ are measured in the same physical unit as the depth map, usually meters.
+
+## Calculate length and area
+
+The distance between two points in the plane is:
+
+$$
+D_{ij}=\sqrt{(u_j-u_i)^2+(v_j-v_i)^2}.
+$$
+
+For an ordered boundary polygon, calculate its area using the shoelace formula:
+
+$$
+A=\frac{1}{2}
+\left|
+\sum_{i=1}^{N}
+(u_i v_{i+1}-u_{i+1}v_i)
+\right|.
+$$
+
+This produces actual plane area rather than apparent image area. See [Measuring Objects Viewed at an Angle in Perspective Images](6_objects_under_angle_perspective.md) for a more detailed treatment of robust plane fitting, boundary handling, diameter, and area.
+
+---
+
+# 9. The Short Version
+
+- Back-project each pixel into a camera ray with $q=K^{-1}p_h$.
+- Use Z-depth to reconstruct the 3D point with $P=Zq$.
+- Collect reliable object points into a point cloud.
+- Calculate the plane normal from the smallest-variation SVD direction.
+- Define the fitted plane with $n\cdot(P-P_0)=0$.
+- Intersect segmentation boundary rays with the plane.
+- Measure lengths and area in a 2D metric coordinate system attached to that plane.
 
 In one sentence:
 
-> The intrinsic matrix turns pixels into rays, and the depth map tells where those rays hit the object.
-
-That is the core idea behind perspective area calculation with depth.
+> Back-project pixels into 3D, recover the surface plane, and perform the physical measurement in that plane.
 
 # Mermaid Diagrams
 
 ## Diagram 1
 
 ```mermaid
-graph LR
-    P["Pixel (x, y)"] --> R["Ray direction d"]
-    R --> D1["Point at depth = 1 m"]
-    R --> D2["Point at depth = 3 m"]
-    R --> D3["Point at depth = 7 m"]
-    R -.-> Dn["...infinitely many"]
+flowchart LR
+  P["Pixel and Z-depth"] --> B["Back-project to 3D"]
+  B --> C["Object point cloud"]
+  C --> N["Calculate normal"]
+  N --> F["Create fitted plane"]
+  S["Segmentation boundary"] --> R["Boundary rays"]
+  R --> I["Intersect rays with plane"]
+  F --> I
+  I --> M["Measure in plane coordinates"]
 ```
 
 # References
