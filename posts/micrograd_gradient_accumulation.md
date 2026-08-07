@@ -16,31 +16,22 @@ This post develops that idea using my [Micrograd from scratch notebook](https://
   - [1. The Computation Graph](#1-the-computation-graph)
   - [2. Why Backward Traversal?](#2-why-backward-traversal)
   - [3. Local Derivatives vs Global Gradients](#3-local-derivatives-vs-global-gradients)
-- [\\right|\_{\\text{through }y}](#right_textthrough-y)
   - [4. The Chain Rule Multiplies Along a Path](#4-the-chain-rule-multiplies-along-a-path)
-- [\\frac{\\partial L}{\\partial i\_1}](#fracpartial-lpartial-i_1)
-- [\\frac{\\partial i\_2}{\\partial i\_1}](#fracpartial-i_2partial-i_1)
-- [2 \\cdot 7](#2-cdot-7)
-- [\\text{upstream gradient}](#textupstream-gradient)
   - [5. Gradients Add Where Paths Merge](#5-gradients-add-where-paths-merge)
-- [\\frac{\\partial L}{\\partial x}](#fracpartial-lpartial-x)
-- [\\frac{\\partial L}{\\partial x}](#fracpartial-lpartial-x-1)
-- [1\\cdot w\_1+1\\cdot w\_2](#1cdot-w_11cdot-w_2)
   - [6. How Micrograd Implements Both Rules](#6-how-micrograd-implements-both-rules)
   - [7. Where Gradient Addition Appears in a Neural Network](#7-where-gradient-addition-appears-in-a-neural-network)
     - [One input feeds several neurons](#one-input-feeds-several-neurons)
     - [One hidden activation feeds the next layer](#one-hidden-activation-feeds-the-next-layer)
-- [\\frac{\\partial L}{\\partial N\_{12}}](#fracpartial-lpartial-n_12)
     - [Shared parameters receive contributions from every training example](#shared-parameters-receive-contributions-from-every-training-example)
-- [\\frac{\\partial L}{\\partial w}](#fracpartial-lpartial-w)
     - [The same principle appears in other architectures](#the-same-principle-appears-in-other-architectures)
   - [8. Accumulation Within a Graph vs Across Training Steps](#8-accumulation-within-a-graph-vs-across-training-steps)
     - [Required: accumulation within the current computation graph](#required-accumulation-within-the-current-computation-graph)
     - [Usually unwanted: accumulation from an earlier optimization step](#usually-unwanted-accumulation-from-an-earlier-optimization-step)
   - [9. The Rule to Remember](#9-the-rule-to-remember)
+  - [Deeper Dive References](#deeper-dive-references)
 
 
-## 1. The Computation Graph
+## 1. The Computation Graph  
 
 A neural network can be viewed as a computation graph. Each scalar `Value` stores:
 
@@ -146,8 +137,7 @@ The operation's `_backward()` function combines that incoming global gradient wi
 $$
 \left.
 \frac{\partial L}{\partial x_i}
-\right|_{\text{through }y}
-=
+\right|_{\text{through }y} =
 \underbrace{\frac{\partial L}{\partial y}}_{\text{incoming global gradient}}
 \underbrace{\frac{\partial y}{\partial x_i}}_{\text{local derivative}}
 $$
@@ -187,21 +177,17 @@ $$
 A tiny movement in `i1` is amplified seven times by the time it reaches `i2`. Each of those seven units then has the two-times effect that `i2` has on `L`. The total effect is:
 
 $$
-\frac{\partial L}{\partial i_1}
-=
+\frac{\partial L}{\partial i_1} =
 \frac{\partial L}{\partial i_2}
-\frac{\partial i_2}{\partial i_1}
-=
-2 \cdot 7
-=
+\frac{\partial i_2}{\partial i_1} =
+2 \cdot 7 =
 14
 $$
 
 This is the chain rule. Along a single path, local change rates multiply:
 
 $$
-\text{upstream gradient}
-=
+	ext{upstream gradient} =
 \text{downstream gradient}
 \times
 \text{local derivative}
@@ -230,8 +216,7 @@ x ----           --> L
 The value `x` affects the loss through both `y1` and `y2`. Its total influence cannot be described by either path alone. It must include both:
 
 $$
-\frac{\partial L}{\partial x}
-=
+\frac{\partial L}{\partial x} =
 \frac{\partial L}{\partial y_1}
 \frac{\partial y_1}{\partial x}
 +
@@ -266,10 +251,8 @@ $$
 we get:
 
 $$
-\frac{\partial L}{\partial x}
-=
-1\cdot w_1+1\cdot w_2
-=
+\frac{\partial L}{\partial x} =
+1\cdot w_1+1\cdot w_2 =
 w_1+w_2
 $$
 
@@ -351,8 +334,7 @@ The same pattern appears between hidden layers. A hidden activation is typically
 The notebook's `N_12` example receives four gradient updates because it is an input to four neurons in the next layer. Before `N_12` propagates backward, those four contributions must be added:
 
 $$
-\frac{\partial L}{\partial N_{12}}
-=
+\frac{\partial L}{\partial N_{12}} =
 \sum_{j=1}^{4}
 \frac{\partial L}{\partial z_j}
 \frac{\partial z_j}{\partial N_{12}}
@@ -371,8 +353,7 @@ $$
 For a shared weight `w`:
 
 $$
-\frac{\partial L}{\partial w}
-=
+\frac{\partial L}{\partial w} =
 \frac{\partial L_1}{\partial w}
 +
 \frac{\partial L_2}{\partial w}
@@ -437,3 +418,9 @@ Or even more compactly:
 > **Multiply along paths. Add across paths. Reset between independent training steps.**
 
 Micrograd makes these rules visible because each scalar operation implements its own local derivative, while reverse topological traversal connects all local derivatives into a complete gradient for every value.
+
+
+## Deeper Dive References
+
+
+- [Why Derivatives Add Across Multiple Paths](why_derivatives_add_across_multiple_paths.md)
