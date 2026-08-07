@@ -14,7 +14,7 @@ This post develops that idea using my [Micrograd from scratch notebook](https://
 - [How Backpropagation Multiplies and Sums Gradients](#how-backpropagation-multiplies-and-sums-gradients)
   - [Table of Contents](#table-of-contents)
   - [1. The Computation Graph](#1-the-computation-graph)
-  - [2. Why Backward Traversal Needs the Reverse Order](#2-why-backward-traversal-needs-the-reverse-order)
+  - [2. Why Backward Traversal?](#2-why-backward-traversal)
   - [3. Local Derivatives vs Global Gradients](#3-local-derivatives-vs-global-gradients)
 - [\\right|\_{\\text{through }y}](#right_textthrough-y)
   - [4. The Chain Rule Multiplies Along a Path](#4-the-chain-rule-multiplies-along-a-path)
@@ -39,6 +39,7 @@ This post develops that idea using my [Micrograd from scratch notebook](https://
     - [Usually unwanted: accumulation from an earlier optimization step](#usually-unwanted-accumulation-from-an-earlier-optimization-step)
   - [9. The Rule to Remember](#9-the-rule-to-remember)
 
+
 ## 1. The Computation Graph
 
 A neural network can be viewed as a computation graph. Each scalar `Value` stores:
@@ -61,17 +62,13 @@ Here, `i1` changes `i2`, and `i2` changes the final loss `L`. Backpropagation an
 
 That quantity is:
 
-$$
-\frac{\partial L}{\partial i_1}
-$$
+$$\frac{\partial L}{\partial i_1}$$
 
 The forward pass constructs the graph and calculates its values. The backward pass traverses the same graph in the opposite direction and calculates how sensitive the loss is to each value.
 
-## 2. Why Backward Traversal Needs the Reverse Order
-
+## 2. Why Backward Traversal?
 The Micrograd notebook first uses depth-first search to build a topological ordering and then reverses it. This means in backpropagation gradients for resulting neurons (Loss, final neurons) are calculated before earlier neurons
-
-Because a node is appended only after its inputs have been visited, `topo` 
+ 
 
 The loss is seeded with:
 
@@ -97,12 +94,10 @@ $$
 
 The operation has **local derivatives**:
 
-$$
-\frac{\partial y}{\partial x_1},
+$$\frac{\partial y}{\partial x_1},
 \frac{\partial y}{\partial x_2},
 \ldots,
-\frac{\partial y}{\partial x_n}
-$$
+\frac{\partial y}{\partial x_n}$$
 
 Each local derivative answers a question about this operation only:
 
@@ -134,16 +129,16 @@ It answers a different question:
 
 > If this intermediate value changes slightly, how much does the final loss change after all downstream functions and paths are taken into account?
 
-Micrograd's `Value.grad` stores this global gradient. For an operation producing `out`:
+Micrograd's `Value.grad` stores this global gradient. If a `Value` named `y` is an intermediate result in the computation graph, then:
 
 ```python
-out.grad
+y.grad
 ```
 
 represents:
 
 $$
-\frac{\partial L}{\partial \text{out}}
+\frac{\partial L}{\partial y}
 $$
 
 The operation's `_backward()` function combines that incoming global gradient with its own local derivative:
@@ -249,23 +244,23 @@ Each term is one complete route from `x` to `L`. Derivatives multiply within eac
 A concrete example is:
 
 $$
-h_1=w_1x
+y_1=w_1x
 $$
 
 $$
-h_2=w_2x
+y_2=w_2x
 $$
 
 $$
-L=h_1+h_2
+L=y_1+y_2
 $$
 
 Because:
 
 $$
-\frac{\partial L}{\partial h_1}=1
+\frac{\partial L}{\partial y_1}=1
 \qquad\text{and}\qquad
-\frac{\partial L}{\partial h_2}=1
+\frac{\partial L}{\partial y_2}=1
 $$
 
 we get:
