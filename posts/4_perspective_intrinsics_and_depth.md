@@ -369,22 +369,30 @@ A pixel alone therefore does not identify one 3D point. It identifies infinitely
 
 ## Connecting the dots
 
-The Z-depth value selects the visible point. For every valid depth-map cell inside the segmented mask, the camera intrinsics give the horizontal and vertical displacement ratios relative to forward distance. **These ratios come from similar right triangles to the actual measurements and depth** this means there is a ratio between the sides.
+ **There is similiar triangle  ratios come from similar right triangles to the actual measurements and depth** 
+
+The Z-depth value Gives us the distance to the point. There is a similiar triangle between the triangle that has focal length and pixel disposition and the actual point coordinates from camera perspective
+thus we can derive the actual
 
 $$
-\frac{Z}{f}=\frac{Y}{y-c_y}=\frac{X}{x-c_x},
+\frac{Z}{f_y}=\frac{Y}{y-c_y},
 $$
+
+$$
+\frac{Z}{f_y}=\frac{X}{x-c_x}
+$$
+
 
 if we know z and pixel ray coordinates, we can also derive Y and X
 
 $$
-\frac{Z}{f}=\frac{Y}{y-c_y}=>Y=\frac{Z(y-c_y)}{f}
+\frac{Z}{f_y}=\frac{Y}{y-c_y}=>Y=\frac{Z(y-c_y)}{f_y}
 $$
 
 Similarly, for the horizontal coordinate:
 
 $$
-\frac{Z}{f}=\frac{X}{x-c_x}=>X=\frac{Z(x-c_x)}{f}
+\frac{Z}{f_x}=\frac{X}{x-c_x}=>X=\frac{Z(x-c_x)}{f_x}
 $$
 
 Thus we can create 3D point
