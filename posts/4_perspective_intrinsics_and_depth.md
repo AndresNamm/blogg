@@ -1,14 +1,11 @@
 # Perspective Projection, Intrinsics, and Depth
 
-This is **Part 4** of the series:
+This is **Part 4** of a 4-part series:
 
 1. [Understanding Camera Coordinate Transformations](1_camera_transformation.md)
 2. [Orthographic Projection? 📸](2_orthographic_projection.md)
 3. [Viewport Transform for Orthographic LiDAR Projection](3_viewport_transform.md)
 4. [Perspective Projection, Intrinsics, and Depth](4_perspective_intrinsics_and_depth.md)
-5. [Orthographic vs Perspective: Scaling, the Perspective Divide, and Getting to Pixels](5_ortho_vs_perspective_scaling.md)
-6. [Measuring Objects Viewed at an Angle in Perspective Images](6_objects_under_angle_perspective.md)
-7. [Z-Depth vs Euclidean Depth in Perspective Projection](7_z_depth_vs_euclidean_depth.md)
 
 ---
 
@@ -27,8 +24,7 @@ This is **Part 4** of the series:
   - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
   - [Pixel to Ray](#pixel-to-ray)
 - [5. Back-Projection into 3D](#5-back-projection-into-3d)
-- [q](#q)
-- [P=Zq](#pzq)
+  - [Connecting the dots](#connecting-the-dots)
 - [6. Creating a Point Cloud](#6-creating-a-point-cloud)
 - [7. Calculating the Surface Normal and Plane](#7-calculating-the-surface-normal-and-plane)
   - [Calculate the center](#calculate-the-center)
@@ -62,9 +58,10 @@ This is **Part 4** of the series:
 
 # Assumptions
 
-- This post assumes that the depth map stores Z-depth, measured parallel to the camera's optical axis. It is not the Euclidean distance along the viewing ray, except at the principal point. See [Z-Depth vs Euclidean Depth in Perspective Projection](7_z_depth_vs_euclidean_depth.md) for a detailed comparison.
+- This post assumes that the depth map stores Z-depth, measured parallel to the camera's optical axis. It is not the Euclidean distance along the viewing ray, except at the principal point. See [Z-Depth vs Euclidean Depth in Perspective Projection](z_depth_vs_euclidean_depth.md) for a detailed comparison.
 - The depth map is registered to the image, so pixel $(x,y)$ and depth $Z(x,y)$ describe the same camera ray.
 - The plane-measurement method assumes that the measured surface is approximately planar. Curved surfaces require a mesh or local surface model.
+- focal length "f" is given in pixel units
 
 # Intro
 
@@ -80,7 +77,7 @@ In perspective projection, a pixel is not a fixed-size square in the world. A pi
 
 Parallel train tracks    
 
-![alt text](/images/train.png)
+![alt text](images/train.png)
 
 This is also how our eyesight works. In real world its not possible to directly obtain ortographic projection.
 
@@ -285,6 +282,17 @@ So the virtual image plane is basically the real image plane mirrored through th
 
 ## Pixel to Ray
 
+
+If we know center offset for x and y, and also the focal length, we can build a vector ray for it
+
+```python
+q = np.array([
+  (x - cx),
+  (y - cy),
+  f,
+])
+```
+
 For Z-depth, it is convenient to build an **unnormalized** camera ray whose forward component is `1`:
 
 ```python
@@ -338,22 +346,10 @@ A normal RGB image gives color at each pixel, but it does not give the depth of 
 
 Projection maps a 3D point to a pixel. **Back-projection** reverses the directional part of that mapping.
 
-For pixel $(x,y)$, write the homogeneous image coordinate as:
+From previous we have
 
 $$
-p_h=
-\begin{pmatrix}
-x \\
-y \\
-1
-\end{pmatrix}.
-$$
-
-Lets do focal-length scaling:
-
-$$
-q
-=
+q=
 \begin{pmatrix}
 \dfrac{x-c_x}{f_x} \\[6pt]
 \dfrac{y-c_y}{f_y} \\[6pt]
@@ -367,11 +363,34 @@ $$
 P(s)=sq, \qquad s>0.
 $$
 
-A pixel alone therefore does not identify one 3D point. It identifies infinitely many possible points along one ray. The Z-depth value selects the visible point:
+
+
+A pixel alone therefore does not identify one 3D point. It identifies infinitely many possible points along one ray. 
+
+## Connecting the dots
+
+The Z-depth value selects the visible point. For every valid depth-map cell inside the segmented mask, the camera intrinsics give the horizontal and vertical displacement ratios relative to forward distance. **These ratios come from similar right triangles to the actual measurements and depth** this means there is a ratio between the sides.
 
 $$
-P=Zq
-=
+\frac{Z}{f}=\frac{Y}{y-c_y}=\frac{X}{x-c_x},
+$$
+
+if we know z and pixel ray coordinates, we can also derive Y and X
+
+$$
+\frac{Z}{f}=\frac{Y}{y-c_y}=>Y=\frac{Z(y-c_y)}{f}
+$$
+
+Similarly, for the horizontal coordinate:
+
+$$
+\frac{Z}{f}=\frac{X}{x-c_x}=>X=\frac{Z(x-c_x)}{f}
+$$
+
+Thus we can create 3D point
+
+$$
+P=Zq=
 \begin{pmatrix}
 Z\dfrac{x-c_x}{f_x} \\[6pt]
 Z\dfrac{y-c_y}{f_y} \\[6pt]
@@ -379,7 +398,7 @@ Z
 \end{pmatrix}.
 $$
 
-We do not normalize $q$ because its third component must remain `1`. Multiplication by $Z$ then makes the third coordinate of $P$ equal to the supplied Z-depth.
+
 
 ---
 
@@ -540,7 +559,7 @@ A=\frac{1}{2}
 \right|.
 $$
 
-This produces actual plane area rather than apparent image area. See [Measuring Objects Viewed at an Angle in Perspective Images](6_objects_under_angle_perspective.md) for a more detailed treatment of robust plane fitting, boundary handling, diameter, and area.
+This produces actual plane area rather than apparent image area.
 
 ---
 

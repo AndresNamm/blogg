@@ -1,15 +1,11 @@
 # Z-Depth vs Euclidean Depth in Perspective Projection
 
-This is **Part 7** of the series:
+This post extends the four-part camera projection series:
 
 1. [Understanding Camera Coordinate Transformations](1_camera_transformation.md)
 2. [Orthographic Projection? 📸](2_orthographic_projection.md)
 3. [Viewport Transform for Orthographic LiDAR Projection](3_viewport_transform.md)
 4. [Perspective Projection, Intrinsics, and Depth](4_perspective_intrinsics_and_depth.md)
-5. [Orthographic vs Perspective: Scaling, the Perspective Divide, and Getting to Pixels](5_ortho_vs_perspective_scaling.md)
-6. [Measuring Objects Viewed at an Angle in Perspective Images](6_objects_under_angle_perspective.md)
-7. [Z-Depth vs Euclidean Depth in Perspective Projection](7_z_depth_vs_euclidean_depth.md)
-8. [Creating a Point Cloud from Pixels and Depth](8_pixels_and_depth_to_point_cloud.md)
 
 ---
 

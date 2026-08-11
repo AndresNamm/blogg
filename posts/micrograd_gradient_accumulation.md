@@ -418,9 +418,3 @@ Or even more compactly:
 > **Multiply along paths. Add across paths. Reset between independent training steps.**
 
 Micrograd makes these rules visible because each scalar operation implements its own local derivative, while reverse topological traversal connects all local derivatives into a complete gradient for every value.
-
-
-## Deeper Dive References
-
-
-- [Why Derivatives Add Across Multiple Paths](why_derivatives_add_across_multiple_paths.md)
