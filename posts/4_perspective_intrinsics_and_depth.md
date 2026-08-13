@@ -23,6 +23,8 @@ This is **Part 4** of a 4-part series:
 - [4. Pixel to Ray](#4-pixel-to-ray)
   - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
   - [Pixel to Ray](#pixel-to-ray)
+    - [Why the forward component can be `1`](#why-the-forward-component-can-be-1)
+    - [X and Y do not have separate forward units](#x-and-y-do-not-have-separate-forward-units)
 - [5. Back-Projection into 3D](#5-back-projection-into-3d)
   - [Connecting the dots](#connecting-the-dots)
 - [6. Creating a Point Cloud](#6-creating-a-point-cloud)
@@ -35,8 +37,6 @@ This is **Part 4** of a 4-part series:
   - [Create a 2D coordinate system on the plane](#create-a-2d-coordinate-system-on-the-plane)
   - [Calculate length and area](#calculate-length-and-area)
 - [9. The Short Version](#9-the-short-version)
-- [Mermaid Diagrams](#mermaid-diagrams)
-  - [Diagram 1](#diagram-1)
 - [References](#references)
 
 ---
@@ -835,21 +835,7 @@ In one sentence:
 
 > Back-project pixels into 3D, recover the surface plane, and perform the physical measurement in that plane.
 
-# Mermaid Diagrams
 
-## Diagram 1
-
-```mermaid
-flowchart LR
-  P["Pixel and Z-depth"] --> B["Back-project to 3D"]
-  B --> C["Object point cloud"]
-  C --> N["Calculate normal"]
-  N --> F["Create fitted plane"]
-  S["Segmentation boundary"] --> R["Boundary rays"]
-  R --> I["Intersect rays with plane"]
-  F --> I
-  I --> M["Measure in plane coordinates"]
-```
 
 # References
 
