@@ -212,7 +212,15 @@ The values `fx` and `fy` are focal lengths, but measured in pixels.
 
 That sounds strange at first because focal length is often described in millimeters. But for image geometry, pixel units are more practical.
 
-In the ideal pinhole camera model, focal length means the forward distance from the pinhole to the image plane.
+In the ideal geometric picture, focal length is the forward distance from the
+pinhole to the image plane. In a calibrated intrinsic matrix, however, `fx`
+and `fy` should be treated directly as two independently estimated
+pixel-coordinate scale parameters.
+
+They may be equal, but the projection equations do not require this. They can
+differ because of image-axis scaling, resizing, non-square sampling, or the
+camera-calibration result. No assumption about a known physical focal length
+or physical pixel size is needed for the reconstruction below.
 
 ![alt text](images/pinhole.png)
 
@@ -282,18 +290,8 @@ So the virtual image plane is basically the real image plane mirrored through th
 
 ## Pixel to Ray
 
-
-If we know center offset for x and y, and also the focal length, we can build a vector ray for it
-
-```python
-q = np.array([
-  (x - cx),
-  (y - cy),
-  f,
-])
-```
-
-For Z-depth, it is convenient to build an **unnormalized** camera ray whose forward component is `1`:
+Because the horizontal and vertical focal lengths may differ, the general
+pixel-ray formula must use each one on its own axis:
 
 ```python
 q = np.array([
@@ -303,13 +301,276 @@ q = np.array([
 ])
 ```
 
-The vector `q` points from the camera center through the pixel. Its components are:
+This is one 3D direction vector. The X and Y calculations provide two
+components of that direction; they are not two separate rays.
+
+Let:
+
+$$
+a=\frac{x-c_x}{f_x},
+\qquad
+b=\frac{y-c_y}{f_y}.
+$$
+
+Using the camera's three basis directions:
+
+$$
+e_x=
+\begin{pmatrix}1\\0\\0\end{pmatrix},
+\qquad
+e_y=
+\begin{pmatrix}0\\1\\0\end{pmatrix},
+\qquad
+e_z=
+\begin{pmatrix}0\\0\\1\end{pmatrix},
+$$
+
+the ray is built by adding the horizontal, vertical, and forward
+contributions:
+
+$$
+\begin{aligned}
+q
+&=a e_x+b e_y+e_z\\
+&=
+\begin{pmatrix}a\\0\\0\end{pmatrix}
++
+\begin{pmatrix}0\\b\\0\end{pmatrix}
++
+\begin{pmatrix}0\\0\\1\end{pmatrix}\\
+&=
+\begin{pmatrix}a\\b\\1\end{pmatrix}.
+\end{aligned}
+$$
+
+So the pixel's X position tells us the ray's left-right slope, and its Y
+position tells us the same ray's up-down slope. Both slopes apply
+simultaneously and define one line leaving the camera centre.
+
+### Why the forward component can be `1`
+
+The `1` is not a measured depth and it is not another focal length. It means:
+
+```text
+Describe the ray at the normalized plane Z = 1.
+```
+
+This follows directly from the two calibrated projection equations:
+
+$$
+x=f_x\frac{X}{Z}+c_x,
+\qquad
+y=f_y\frac{Y}{Z}+c_y.
+$$
+
+Rearranging them gives:
+
+$$
+\frac{X}{Z}=\frac{x-c_x}{f_x},
+\qquad
+\frac{Y}{Z}=\frac{y-c_y}{f_y}.
+$$
+
+Now choose the representative point on the ray whose camera-space forward
+coordinate is $Z=1$. Then:
+
+$$
+X=\frac{x-c_x}{f_x},
+\qquad
+Y=\frac{y-c_y}{f_y},
+\qquad
+Z=1.
+$$
+
+Therefore:
+
+$$
+q=
+\begin{pmatrix}
+\dfrac{x-c_x}{f_x}\\[6pt]
+\dfrac{y-c_y}{f_y}\\[6pt]
+1
+\end{pmatrix}.
+$$
+
+This is a choice of scale for representing the ray. We could choose $Z=2$ and
+obtain:
+
+$$
+2q=
+\begin{pmatrix}
+2(x-c_x)/f_x\\
+2(y-c_y)/f_y\\
+2
+\end{pmatrix},
+$$
+
+which points in exactly the same direction. Choosing $Z=1$ is convenient
+because a measured Z-depth can then scale the ray directly.
+
+### X and Y do not have separate forward units
+
+The reconstructed point is one physical 3D point:
+
+$$
+P=
+\begin{pmatrix}
+X\\Y\\Z
+\end{pmatrix}.
+$$
+
+Its horizontal and vertical relationships are:
+
+$$
+\frac{X}{Z}=\frac{x-c_x}{f_x},
+\qquad
+\frac{Y}{Z}=\frac{y-c_y}{f_y}.
+$$
+
+Both equations contain the **same $Z$**:
+
+```text
+horizontal view: X compared with the point's Z
+vertical view:   Y compared with the same point's Z
+```
+
+There is no separate $Z_x$ for X and $Z_y$ for Y. The camera has one optical
+axis, and the point has one forward coordinate.
+
+There is, however, an important distinction between **pixel-diagram
+coordinates** and **camera coordinates**.
+
+In the horizontal X-Z cross-section, the ray can be represented using pixel
+units as:
+
+$$
+\begin{pmatrix}
+x-c_x\\
+f_x
+\end{pmatrix}.
+$$
+
+In the vertical Y-Z cross-section, it can be represented as:
+
+$$
+\begin{pmatrix}
+y-c_y\\
+f_y
+\end{pmatrix}.
+$$
+
+These two forward numbers can differ:
+
+```text
+horizontal pixel diagram: forward coordinate = fx pixels
+vertical pixel diagram:   forward coordinate = fy pixels
+```
+
+But `fx pixels` and `fy pixels` belong to two separately scaled image-axis
+equations. They are calibrated projection parameters, not two metric
+camera-space Z coordinates. No conversion to a physical focal length is
+needed to use them.
+
+We cannot directly combine:
+
+$$
+\begin{pmatrix}
+x-c_x\\
+y-c_y\\
+?
+\end{pmatrix}
+$$
+
+and choose either $f_x$ or $f_y$ as the third component, because the first two
+components use different pixel scales. Instead, divide each offset by its own
+focal length:
+
+$$
+\frac{x-c_x}{f_x}=\frac{X}{Z},
+\qquad
+\frac{y-c_y}{f_y}=\frac{Y}{Z}.
+$$
+
+Now both values are dimensionless ratios in the same metric camera coordinate
+system, so they can be combined:
+
+$$
+q=
+\begin{pmatrix}
+X/Z\\
+Y/Z\\
+1
+\end{pmatrix}.
+$$
+
+The unequal values of $f_x$ and $f_y$ therefore convert horizontal and
+vertical pixel offsets into two different slopes. All reconstructed physical
+coordinates use one common unit:
+
+```text
+X in metres
+Y in metres
+Z in metres
+```
+
+For example, suppose:
+
+```text
+fx = 1000 px
+fy = 800 px
+x - cx = 100 px
+y - cy = 100 px
+```
+
+Then:
+
+```python
+q = [100 / 1000, 100 / 800, 1]
+q = [0.1, 0.125, 1]
+```
+
+This is a pair of ratios relative to the same Z coordinate:
+
+$$
+\frac{X}{Z}=0.1,
+\qquad
+\frac{Y}{Z}=0.125.
+$$
+
+If the one measured Z-depth is `2 m`, both ratios use that same value:
+
+```python
+X = 2.0 * 0.1
+Y = 2.0 * 0.125
+Z = 2.0
+
+P = [0.2, 0.25, 2.0]  # metres
+```
+
+The vector `q` points from the camera center through the pixel. It is scaled so
+that its forward component is `1`, which makes it directly compatible with
+Z-depth. Its components are:
 
 | Term | Meaning |
 |---|---|
-| `(x - cx) / fx` | horizontal position per unit of forward depth |
-| `(y - cy) / fy` | vertical position per unit of forward depth |
-| `1.0` | one unit forward along the optical axis |
+| `(x - cx) / fx` | the ratio $X/Z$ |
+| `(y - cy) / fy` | the ratio $Y/Z$ |
+| `1.0` | the common normalized Z reference |
+
+If the special case $f_x=f_y=f$ applies, multiplying the whole vector by $f$
+gives an equivalent direction:
+
+```python
+q = np.array([
+  x - cx,
+  y - cy,
+  f,
+])
+```
+
+Multiplying every component by the same number does not change a ray's
+direction. This second form is therefore valid only when one common focal
+length `f` applies. When `fx != fy`, use the first formula.
 
 If the pixel is at the principal point ($x = c_x,\ y = c_y$), then:
 
@@ -346,7 +607,8 @@ q=
 \end{pmatrix}.
 $$
 
-The vector $q$ is an unnormalized ray in camera coordinates. Every point on that ray has the form:
+The vector $q$ is a camera-space ray direction scaled so that its forward
+component is $1$. Every point on that ray has the form:
 
 $$
 P(s)=sq, \qquad s>0.
@@ -496,7 +758,8 @@ The object may look foreshortened in the image, but its physical width and area 
 
 ## Move the image boundary onto the plane
 
-For each boundary pixel, calculate its unnormalized ray $q$. A point on the ray is $P(s)=sq$. Substitute this into the plane equation:
+For each boundary pixel, calculate the ray $q$ with forward component $1$. A
+point on the ray is $P(s)=sq$. Substitute this into the plane equation:
 
 $$
 n\cdot(sq-P_0)=0.
