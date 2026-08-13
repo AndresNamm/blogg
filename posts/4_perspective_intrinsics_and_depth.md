@@ -329,22 +329,11 @@ That ray points forward and slightly right.
 
 Any positive multiple of `q` points along the same ray. We deliberately do not normalize it: because its forward component is `1`, multiplying it by a Z-depth $Z$ produces a point whose forward coordinate is exactly $Z$.
 
-This is the first half of the perspective-measurement trick.
-
-Those coordinates do not say where the object is in 3D. They say which direction the camera is looking for that pixel.
-
-So one RGB pixel really means:
-
-> The object is *somewhere* along this ray — **not** that the object is exactly at one point.
-
-A normal RGB image gives color at each pixel, but it does not give the depth of the visible surface. One pixel therefore corresponds to infinitely many possible 3D points along the same ray (see [Diagram 1](#diagram-1) at the end of this post).
-
-
 
 
 # 5. Back-Projection into 3D
 
-Projection maps a 3D point to a pixel. **Back-projection** reverses the directional part of that mapping.
+Projection through lens maps a 3D point to a pixel. **Back-projection** reverses the directional part of that mapping.
 
 From previous we have
 
@@ -365,11 +354,9 @@ $$
 
 
 
-A pixel alone therefore does not identify one 3D point. It identifies infinitely many possible points along one ray. 
+A pixel alone therefore does not identify one phyisical 3D point. It identifies infinitely many possible points along one ray. 
 
 ## Connecting the dots
-
- **There is similiar triangle  ratios come from similar right triangles to the actual measurements and depth** 
 
 The Z-depth value Gives us the distance to the point. There is a similiar triangle between the triangle that has focal length and pixel disposition and the actual point coordinates from camera perspective
 thus we can derive the actual
@@ -379,7 +366,7 @@ $$
 $$
 
 $$
-\frac{Z}{f_y}=\frac{X}{x-c_x}
+\frac{Z}{f_x}=\frac{X}{x-c_x}
 $$
 
 
