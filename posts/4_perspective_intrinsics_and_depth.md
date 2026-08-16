@@ -23,20 +23,9 @@ This is **Part 4** of a 4-part series:
 - [4. Pixel to Ray](#4-pixel-to-ray)
   - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
   - [Pixel to Ray](#pixel-to-ray)
-    - [Why the forward component can be `1`](#why-the-forward-component-can-be-1)
-    - [X and Y do not have separate forward units](#x-and-y-do-not-have-separate-forward-units)
 - [5. Back-Projection into 3D](#5-back-projection-into-3d)
-  - [Connecting the dots](#connecting-the-dots)
 - [6. Creating a Point Cloud](#6-creating-a-point-cloud)
-- [7. Calculating the Surface Normal and Plane](#7-calculating-the-surface-normal-and-plane)
-  - [Calculate the center](#calculate-the-center)
-  - [Calculate the normal](#calculate-the-normal)
-  - [Create the plane](#create-the-plane)
-- [8. Measuring on the Plane](#8-measuring-on-the-plane)
-  - [Move the image boundary onto the plane](#move-the-image-boundary-onto-the-plane)
-  - [Create a 2D coordinate system on the plane](#create-a-2d-coordinate-system-on-the-plane)
-  - [Calculate length and area](#calculate-length-and-area)
-- [9. The Short Version](#9-the-short-version)
+- [7. Enjoy your life back in 3D space](#7-enjoy-your-life-back-in-3d-space)
 - [References](#references)
 
 ---
@@ -290,8 +279,54 @@ So the virtual image plane is basically the real image plane mirrored through th
 
 ## Pixel to Ray
 
-Because the horizontal and vertical focal lengths may differ, the general
-pixel-ray formula must use each one on its own axis:
+- Depth Z combined with perspective camera on X,Z plane
+![alt text](images/x_camera.png)
+
+- Depth Z combined with perspective camera on X,Y plane
+![alt text](images/y_camera.png)
+
+
+- As you can see, Z in both visuals remains same, but the f_x and f_y could change.
+- A pixel has image coordinates $(x,y)$. Relative to the principal point,
+  its offsets are $x-c_x$ horizontally and $y-c_y$ vertically.
+- In the horizontal X-Z cross-section, the pixel offset and focal scale form
+  the small reference triangle $(x-c_x,f_x)$. The corresponding camera-space
+  point forms the larger triangle $(X,Z)$. These triangles are similar because
+  both lie along the same camera ray.
+- As triangles are similiar, we can say:
+
+  $$
+  \frac{Z}{f_x}=\frac{X}{x-c_x},
+  $$
+
+  and rearranging gives
+
+  $$
+  X=Z\frac{x-c_x}{f_x}.
+  $$
+
+- The same argument in the vertical Y-Z cross-section uses the triangle
+  $(y-c_y,f_y)$ and gives
+
+  $$
+  \frac{Z}{f_y}=\frac{Y}{y-c_y}
+  \qquad\Longrightarrow\qquad
+  Y=Z\frac{y-c_y}{f_y}.
+  $$
+
+- The depth $Z$ is the same in both cross-sections because they describe the
+  same 3D point. Combining the two derivations gives
+
+  $$
+  P=(X,Y,Z)=
+  \left(
+  Z\frac{x-c_x}{f_x},
+  Z\frac{y-c_y}{f_y},
+  Z
+  \right).
+  $$
+
+- If we now divide the vector by Z, we get
 
 ```python
 q = np.array([
@@ -299,296 +334,13 @@ q = np.array([
   (y - cy) / fy,
   1.0,
 ])
-```
+``` 
+- This is a commong representation of pixels on virtual plane as it allows easy transfer with depth back to the 3D space.
 
-This is one 3D direction vector. The X and Y calculations provide two
-components of that direction; they are not two separate rays.
+-  $(x-c_x)/f_x$ and $(y-c_y)/f_y$ first describe the ray's horizontaland vertical displacement per unit of forward motion. Multiplying both by
+  the measured camera-axis depth $Z$ converts those ratios into metric $X$
+  and $Y$ coordinates.
 
-Let:
-
-$$
-a=\frac{x-c_x}{f_x},
-\qquad
-b=\frac{y-c_y}{f_y}.
-$$
-
-Using the camera's three basis directions:
-
-$$
-e_x=
-\begin{pmatrix}1\\0\\0\end{pmatrix},
-\qquad
-e_y=
-\begin{pmatrix}0\\1\\0\end{pmatrix},
-\qquad
-e_z=
-\begin{pmatrix}0\\0\\1\end{pmatrix},
-$$
-
-the ray is built by adding the horizontal, vertical, and forward
-contributions:
-
-$$
-\begin{aligned}
-q
-&=a e_x+b e_y+e_z\\
-&=
-\begin{pmatrix}a\\0\\0\end{pmatrix}
-+
-\begin{pmatrix}0\\b\\0\end{pmatrix}
-+
-\begin{pmatrix}0\\0\\1\end{pmatrix}\\
-&=
-\begin{pmatrix}a\\b\\1\end{pmatrix}.
-\end{aligned}
-$$
-
-So the pixel's X position tells us the ray's left-right slope, and its Y
-position tells us the same ray's up-down slope. Both slopes apply
-simultaneously and define one line leaving the camera centre.
-
-### Why the forward component can be `1`
-
-The `1` is not a measured depth and it is not another focal length. It means:
-
-```text
-Describe the ray at the normalized plane Z = 1.
-```
-
-This follows directly from the two calibrated projection equations:
-
-$$
-x=f_x\frac{X}{Z}+c_x,
-\qquad
-y=f_y\frac{Y}{Z}+c_y.
-$$
-
-Rearranging them gives:
-
-$$
-\frac{X}{Z}=\frac{x-c_x}{f_x},
-\qquad
-\frac{Y}{Z}=\frac{y-c_y}{f_y}.
-$$
-
-Now choose the representative point on the ray whose camera-space forward
-coordinate is $Z=1$. Then:
-
-$$
-X=\frac{x-c_x}{f_x},
-\qquad
-Y=\frac{y-c_y}{f_y},
-\qquad
-Z=1.
-$$
-
-Therefore:
-
-$$
-q=
-\begin{pmatrix}
-\dfrac{x-c_x}{f_x}\\[6pt]
-\dfrac{y-c_y}{f_y}\\[6pt]
-1
-\end{pmatrix}.
-$$
-
-This is a choice of scale for representing the ray. We could choose $Z=2$ and
-obtain:
-
-$$
-2q=
-\begin{pmatrix}
-2(x-c_x)/f_x\\
-2(y-c_y)/f_y\\
-2
-\end{pmatrix},
-$$
-
-which points in exactly the same direction. Choosing $Z=1$ is convenient
-because a measured Z-depth can then scale the ray directly.
-
-### X and Y do not have separate forward units
-
-The reconstructed point is one physical 3D point:
-
-$$
-P=
-\begin{pmatrix}
-X\\Y\\Z
-\end{pmatrix}.
-$$
-
-Its horizontal and vertical relationships are:
-
-$$
-\frac{X}{Z}=\frac{x-c_x}{f_x},
-\qquad
-\frac{Y}{Z}=\frac{y-c_y}{f_y}.
-$$
-
-Both equations contain the **same $Z$**:
-
-```text
-horizontal view: X compared with the point's Z
-vertical view:   Y compared with the same point's Z
-```
-
-There is no separate $Z_x$ for X and $Z_y$ for Y. The camera has one optical
-axis, and the point has one forward coordinate.
-
-There is, however, an important distinction between **pixel-diagram
-coordinates** and **camera coordinates**.
-
-In the horizontal X-Z cross-section, the ray can be represented using pixel
-units as:
-
-$$
-\begin{pmatrix}
-x-c_x\\
-f_x
-\end{pmatrix}.
-$$
-
-In the vertical Y-Z cross-section, it can be represented as:
-
-$$
-\begin{pmatrix}
-y-c_y\\
-f_y
-\end{pmatrix}.
-$$
-
-These two forward numbers can differ:
-
-```text
-horizontal pixel diagram: forward coordinate = fx pixels
-vertical pixel diagram:   forward coordinate = fy pixels
-```
-
-But `fx pixels` and `fy pixels` belong to two separately scaled image-axis
-equations. They are calibrated projection parameters, not two metric
-camera-space Z coordinates. No conversion to a physical focal length is
-needed to use them.
-
-We cannot directly combine:
-
-$$
-\begin{pmatrix}
-x-c_x\\
-y-c_y\\
-?
-\end{pmatrix}
-$$
-
-and choose either $f_x$ or $f_y$ as the third component, because the first two
-components use different pixel scales. Instead, divide each offset by its own
-focal length:
-
-$$
-\frac{x-c_x}{f_x}=\frac{X}{Z},
-\qquad
-\frac{y-c_y}{f_y}=\frac{Y}{Z}.
-$$
-
-Now both values are dimensionless ratios in the same metric camera coordinate
-system, so they can be combined:
-
-$$
-q=
-\begin{pmatrix}
-X/Z\\
-Y/Z\\
-1
-\end{pmatrix}.
-$$
-
-The unequal values of $f_x$ and $f_y$ therefore convert horizontal and
-vertical pixel offsets into two different slopes. All reconstructed physical
-coordinates use one common unit:
-
-```text
-X in metres
-Y in metres
-Z in metres
-```
-
-For example, suppose:
-
-```text
-fx = 1000 px
-fy = 800 px
-x - cx = 100 px
-y - cy = 100 px
-```
-
-Then:
-
-```python
-q = [100 / 1000, 100 / 800, 1]
-q = [0.1, 0.125, 1]
-```
-
-This is a pair of ratios relative to the same Z coordinate:
-
-$$
-\frac{X}{Z}=0.1,
-\qquad
-\frac{Y}{Z}=0.125.
-$$
-
-If the one measured Z-depth is `2 m`, both ratios use that same value:
-
-```python
-X = 2.0 * 0.1
-Y = 2.0 * 0.125
-Z = 2.0
-
-P = [0.2, 0.25, 2.0]  # metres
-```
-
-The vector `q` points from the camera center through the pixel. It is scaled so
-that its forward component is `1`, which makes it directly compatible with
-Z-depth. Its components are:
-
-| Term | Meaning |
-|---|---|
-| `(x - cx) / fx` | the ratio $X/Z$ |
-| `(y - cy) / fy` | the ratio $Y/Z$ |
-| `1.0` | the common normalized Z reference |
-
-If the special case $f_x=f_y=f$ applies, multiplying the whole vector by $f$
-gives an equivalent direction:
-
-```python
-q = np.array([
-  x - cx,
-  y - cy,
-  f,
-])
-```
-
-Multiplying every component by the same number does not change a ray's
-direction. This second form is therefore valid only when one common focal
-length `f` applies. When `fx != fy`, use the first formula.
-
-If the pixel is at the principal point ($x = c_x,\ y = c_y$), then:
-
-```python
-q = [0, 0, 1]
-```
-
-That ray points straight forward.
-
-If the pixel is 100 pixels to the right ($x = c_x + 100,\ y = c_y$), then:
-
-```python
-q = [100 / fx, 0, 1]
-```
-
-That ray points forward and slightly right.
-
-Any positive multiple of `q` points along the same ray. We deliberately do not normalize it: because its forward component is `1`, multiplying it by a Z-depth $Z$ produces a point whose forward coordinate is exactly $Z$.
 
 
 
@@ -618,33 +370,7 @@ $$
 
 A pixel alone therefore does not identify one phyisical 3D point. It identifies infinitely many possible points along one ray. 
 
-## Connecting the dots
-
-The Z-depth value Gives us the distance to the point. There is a similiar triangle between the triangle that has focal length and pixel disposition and the actual point coordinates from camera perspective
-thus we can derive the actual
-
-$$
-\frac{Z}{f_y}=\frac{Y}{y-c_y},
-$$
-
-$$
-\frac{Z}{f_x}=\frac{X}{x-c_x}
-$$
-
-
-if we know z and pixel ray coordinates, we can also derive Y and X
-
-$$
-\frac{Z}{f_y}=\frac{Y}{y-c_y}=>Y=\frac{Z(y-c_y)}{f_y}
-$$
-
-Similarly, for the horizontal coordinate:
-
-$$
-\frac{Z}{f_x}=\frac{X}{x-c_x}=>X=\frac{Z(x-c_x)}{f_x}
-$$
-
-Thus we can create 3D point
+Thus having Z, based on previous logic above we can create 3D point
 
 $$
 P=Zq=
@@ -684,158 +410,10 @@ For plane estimation, use reliable interior points. Depth near an object boundar
 
 ---
 
-# 7. Calculating the Surface Normal and Plane
 
-Suppose the reconstructed object is approximately planar, such as the cut face of a log. A plane is determined by one point on the plane and a normal vector perpendicular to it.
+# 7. Enjoy your life back in 3D space
 
-## Calculate the center
-
-For reconstructed points $P_1,\ldots,P_N$, calculate their centroid:
-
-$$
-P_0=\frac{1}{N}\sum_{i=1}^{N}P_i.
-$$
-
-The centroid $P_0$ becomes the reference point of the fitted plane.
-
-## Calculate the normal
-
-Center every point around $P_0$ and place the centered coordinates into a matrix:
-
-$$
-A=
-\begin{pmatrix}
-(P_1-P_0)^T \\
-(P_2-P_0)^T \\
-\vdots \\
-(P_N-P_0)^T
-\end{pmatrix}.
-$$
-
-Calculate the singular value decomposition:
-
-$$
-A=U\Sigma V^T.
-$$
-
-The row of $V^T$ corresponding to the smallest singular value is the unit normal $n$. It points in the direction with the least variation among the reconstructed points, which is perpendicular to their best-fitting plane.
-
-```python
-plane_center = points.mean(axis=0)
-centered_points = points - plane_center
-_, _, vh = np.linalg.svd(centered_points, full_matrices=False)
-normal = vh[-1]
-normal /= np.linalg.norm(normal)
-```
-
-The signs of $n$ and $-n$ describe the same plane. If a consistent normal facing the camera is needed, flip it when $n\cdot P_0>0$.
-
-## Create the plane
-
-The fitted plane is:
-
-$$
-n\cdot(P-P_0)=0,
-$$
-
-where $P$ is any point on the plane. Equivalently:
-
-$$
-n\cdot P+d=0,
-\qquad
-d=-n\cdot P_0.
-$$
-
-The normal describes the plane's orientation, while $P_0$ or $d$ describes its position in 3D space.
-
-For noisy measurements, RANSAC can first remove points that do not belong to the dominant plane. SVD can then refine the plane using the inliers.
-
----
-
-# 8. Measuring on the Plane
-
-The object may look foreshortened in the image, but its physical width and area belong to the fitted 3D plane. The segmentation boundary must therefore be placed onto that plane before it is measured.
-
-## Move the image boundary onto the plane
-
-For each boundary pixel, calculate the ray $q$ with forward component $1$. A
-point on the ray is $P(s)=sq$. Substitute this into the plane equation:
-
-$$
-n\cdot(sq-P_0)=0.
-$$
-
-Solving for $s$ gives:
-
-$$
-s=\frac{n\cdot P_0}{n\cdot q}.
-$$
-
-The 3D boundary point on the plane is:
-
-$$
-B=sq.
-$$
-
-Each boundary pixel has a different ray and usually a different value of $s$. This accounts for perspective and for the angle between the camera and the measured plane. If $n\cdot q$ is close to zero, the ray is nearly parallel to the plane and the intersection is unstable.
-
-## Create a 2D coordinate system on the plane
-
-Choose two orthonormal basis vectors $e_1$ and $e_2$ within the plane:
-
-$$
-e_1\cdot n=0,
-\qquad
-e_2=n\times e_1.
-$$
-
-Convert each 3D boundary point $B_i$ into metric plane coordinates:
-
-$$
-u_i=(B_i-P_0)\cdot e_1,
-\qquad
-v_i=(B_i-P_0)\cdot e_2.
-$$
-
-The coordinates $(u_i,v_i)$ are measured in the same physical unit as the depth map, usually meters.
-
-## Calculate length and area
-
-The distance between two points in the plane is:
-
-$$
-D_{ij}=\sqrt{(u_j-u_i)^2+(v_j-v_i)^2}.
-$$
-
-For an ordered boundary polygon, calculate its area using the shoelace formula:
-
-$$
-A=\frac{1}{2}
-\left|
-\sum_{i=1}^{N}
-(u_i v_{i+1}-u_{i+1}v_i)
-\right|.
-$$
-
-This produces actual plane area rather than apparent image area.
-
----
-
-# 9. The Short Version
-
-- Back-project each pixel into a camera ray with $q=K^{-1}p_h$.
-- Use Z-depth to reconstruct the 3D point with $P=Zq$.
-- Collect reliable object points into a point cloud.
-- Calculate the plane normal from the smallest-variation SVD direction.
-- Define the fitted plane with $n\cdot(P-P_0)=0$.
-- Intersect segmentation boundary rays with the plane.
-- Measure lengths and area in a 2D metric coordinate system attached to that plane.
-
-In one sentence:
-
-> Back-project pixels into 3D, recover the surface plane, and perform the physical measurement in that plane.
-
-
+- 2D is nice and colorful but people need depth.
 
 # References
 
