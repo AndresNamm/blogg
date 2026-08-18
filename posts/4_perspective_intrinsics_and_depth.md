@@ -23,6 +23,10 @@ This is **Part 4** of a 4-part series:
 - [4. Pixel to Ray](#4-pixel-to-ray)
   - [First let's talk about the virtual image plane](#first-lets-talk-about-the-virtual-image-plane)
   - [Pixel to Ray](#pixel-to-ray)
+    - [Two 2D views](#two-2d-views)
+      - [X,Z plane](#xz-plane)
+      - [X,Y plane](#xy-plane)
+    - [Reasoning](#reasoning)
 - [5. Back-Projection into 3D](#5-back-projection-into-3d)
 - [6. Creating a Point Cloud](#6-creating-a-point-cloud)
 - [7. Enjoy your life back in 3D space](#7-enjoy-your-life-back-in-3d-space)
@@ -279,12 +283,21 @@ So the virtual image plane is basically the real image plane mirrored through th
 
 ## Pixel to Ray
 
+### Two 2D views
+
+
+#### X,Z plane
+
 - Depth Z combined with perspective camera on X,Z plane
 ![alt text](images/x_camera.png)
+
+#### X,Y plane
 
 - Depth Z combined with perspective camera on X,Y plane
 ![alt text](images/y_camera.png)
 
+
+### Reasoning
 
 - As you can see, Z in both visuals remains same, but the f_x and f_y could change.
 - A pixel has image coordinates $(x,y)$. Relative to the principal point,
@@ -293,7 +306,7 @@ So the virtual image plane is basically the real image plane mirrored through th
   the small reference triangle $(x-c_x,f_x)$. The corresponding camera-space
   point forms the larger triangle $(X,Z)$. These triangles are similar because
   both lie along the same camera ray.
-- As triangles are similiar, we can say:
+- Based on [this rule](https://www.mathsisfun.com/geometry/triangles-similar.html) as triangles are similiar, we can say:
 
   $$
   \frac{Z}{f_x}=\frac{X}{x-c_x},
@@ -335,18 +348,18 @@ q = np.array([
   1.0,
 ])
 ``` 
-- This is a commong representation of pixels on virtual plane as it allows easy transfer with depth back to the 3D space.
+- This is a common representation of rays derived from internal matrix and pixel coordinates.  Tt allows easy transfer with depth back to the 3D space.
 
--  $(x-c_x)/f_x$ and $(y-c_y)/f_y$ first describe the ray's horizontaland vertical displacement per unit of forward motion. Multiplying both by
-  the measured camera-axis depth $Z$ converts those ratios into metric $X$
-  and $Y$ coordinates.
+-  $(x-c_x)/f_x$ and $(y-c_y)/f_y$ first describe the ray's horizontaland vertical displacement per respective focal length. Multiplying both by the measured camera-axis depth $Z$ converts those ratios into metric $X$ and $Y$ coordinates.
+   -  **Interesting fact** this division is actually equal to the tangent of the principal ray an specifix point ray.
 
 
 
 
 # 5. Back-Projection into 3D
 
-Projection through lens maps a 3D point to a pixel. **Back-projection** reverses the directional part of that mapping.
+- Projection through lens maps a 3D point to a pixel. 
+- **Back-projection** reverses the directional part of that mapping.
 
 From previous we have
 
