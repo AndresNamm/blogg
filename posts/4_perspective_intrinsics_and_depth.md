@@ -303,10 +303,10 @@ So the virtual image plane is basically the real image plane mirrored through th
 - A pixel has image coordinates $(x,y)$. Relative to the principal point,
   its offsets are $x-c_x$ horizontally and $y-c_y$ vertically.
 - In the horizontal X-Z cross-section, the pixel offset and focal scale form
-  the small reference triangle $(x-c_x,f_x)$. The corresponding camera-space
+  the small reference triangle $(x-c_x,f_x)$. The corresponding physical space
   point forms the larger triangle $(X,Z)$. These triangles are similar because
   both lie along the same camera ray.
-- Based on [this rule](https://www.mathsisfun.com/geometry/triangles-similar.html) as triangles are similiar, we can say:
+- Based on [this rule](https://www.mathsisfun.com/geometry/triangles-similar.html) for triangles that are similiar, we can say:
 
   $$
   \frac{Z}{f_x}=\frac{X}{x-c_x},
@@ -341,17 +341,25 @@ So the virtual image plane is basically the real image plane mirrored through th
 
 - If we now divide the vector by Z, we get
 
-```python
-q = np.array([
-  (x - cx) / fx,
-  (y - cy) / fy,
-  1.0,
-])
-``` 
-- This is a common representation of rays derived from internal matrix and pixel coordinates.  Tt allows easy transfer with depth back to the 3D space.
+$$
+q =
+\begin{pmatrix}
+\dfrac{x-c_x}{f_x} \\
+\dfrac{y-c_y}{f_y} \\
+1
+\end{pmatrix}.
+$$
 
--  $(x-c_x)/f_x$ and $(y-c_y)/f_y$ first describe the ray's horizontaland vertical displacement per respective focal length. Multiplying both by the measured camera-axis depth $Z$ converts those ratios into metric $X$ and $Y$ coordinates.
-   -  **Interesting fact** this division is actually equal to the tangent of the principal ray an specifix point ray.
+- This is a common representation of rays derived from internal matrix and pixel coordinates. It allows easy transfer with depth back to the 3D space.
+
+- $(x-c_x)/f_x$ and $(y-c_y)/f_y$ describe the ray's horizontal and vertical displacement relative to the focal length. Multiplying these ratios by the measured camera-axis depth $Z$ converts them into metric $X$ and $Y$ coordinates.
+  - **Interesting fact:** these ratios are the camera-view equivalents of a tangent. In the X-Z cross-section, the offset $x-c_x$ and focal length $f_x$ form a right triangle with angle $\theta_x$, so
+
+    $$
+    \tan(\theta_x) = \frac{x-c_x}{f_x}.
+    $$
+
+    The same idea holds in the Y-Z plane with $\theta_y$ and $(y-c_y)/f_y$. So each pixel does not just encode a location on the sensor; it encodes a viewing angle from the camera center.
 
 
 
@@ -391,7 +399,12 @@ P=Zq=
 Z\dfrac{x-c_x}{f_x} \\[6pt]
 Z\dfrac{y-c_y}{f_y} \\[6pt]
 Z
-\end{pmatrix}.
+\end{pmatrix}=
+\begin{pmatrix}
+X \\[6pt]
+Y \\[6pt]
+Z
+\end{pmatrix}
 $$
 
 
@@ -403,30 +416,25 @@ $$
 Back-project every valid depth pixel to create a point cloud of the visible surface:
 
 ```python
-def depth_map_to_points(depth, fx, fy, cx, cy, mask=None):
-  valid = np.isfinite(depth) & (depth > 0)
-  if mask is not None:
-    valid &= mask
+def depth_map_to_points(depth, fx, fy, cx, cy):
 
-  pixel_y, pixel_x = np.nonzero(valid)
   z_depth = depth[pixel_y, pixel_x]
 
   point_x = z_depth * (pixel_x - cx) / fx
   point_y = z_depth * (pixel_y - cy) / fy
-
   return np.column_stack((point_x, point_y, z_depth))
 ```
 
-Each row of the result is a point $(X,Y,Z)$ in camera coordinates. Applying an object mask before back-projection keeps only the 3D points associated with that object.
+Each row of the result is a point $(X,Y,Z)$ in camera coordinates. 
 
-For plane estimation, use reliable interior points. Depth near an object boundary may mix foreground and background measurements, so invalid values and outliers should be removed first.
+
 
 ---
 
 
 # 7. Enjoy your life back in 3D space
 
-- 2D is nice and colorful but people need depth.
+- 2D is nice and colorful but life needs depth.
 
 # References
 
