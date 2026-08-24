@@ -6,12 +6,10 @@ Derivatives become easier to understand when they are treated as one connected i
 
 This series develops that idea through four questions.
 
-| Question | Article | Core answer |
-| --- | --- | --- |
-| What is a derivative? | [What Is a Derivative?](what_is_a_derivative.md) | The derivative is the best linear prediction of local change. |
-| What is a directional derivative, and why is it a sum? | [Directional Derivatives and Why They Are Sums](directional_derivative_and_why_it_is_a_sum.md) | A direction is made of coordinate movements, and the derivative adds their first-order effects. |
-| How do derivatives work in neural networks? | [How Derivatives Work in Neural Networks](micrograd_gradient_accumulation.md) | Backpropagation multiplies derivatives along paths and adds contributions across paths. |
-| What is a gradient, and why does it point toward the largest change? | [Why the Gradient Points Toward Steepest Ascent](gradient_direction_of_steepest_ascent.md) | The directional derivative is largest when the movement direction aligns with the gradient. |
+- [What Is a Derivative?](what_is_a_derivative.md)
+- [Directional Derivatives and Why They Are Sums](directional_derivative_and_why_it_is_a_sum.md)
+- [How Derivatives Work in Neural Networks](micrograd_gradient_accumulation.md)
+- [Why the Gradient Points Toward Steepest Ascent](gradient_direction_of_steepest_ascent.md)
 
 ## The Whole Idea in Four Equations
 
@@ -21,11 +19,13 @@ $$
 f'(a)=\lim_{h\to0}\frac{f(a+h)-f(a)}{h}.
 $$
 
-Its practical meaning is a prediction of nearby change:
+Its practical meaning is a prediction of nearby change. We can rewrite the derivative definition to show that, for small $h$, the change in $f$ is approximately linear in $h$:
 
 $$
 f(a+h)-f(a)\approx f'(a)h.
 $$
+
+## Directional Derivatives and Why They Are Sums
 
 For a scalar-valued function with several inputs, the same prediction becomes:
 
@@ -35,14 +35,17 @@ f(\mathbf a+\mathbf h)-f(\mathbf a)
 \nabla f(\mathbf a)\cdot\mathbf h.
 $$
 
-If $\hat{\mathbf u}$ is a unit vector, the change per unit distance in that direction is:
+Here, $\mathbf h=(h_1,\ldots,h_n)$ describes how far we move in each input coordinate. The dot product expands to:
 
 $$
-D_{\hat{\mathbf u}}f(\mathbf a)=
-\nabla f(\mathbf a)\cdot\hat{\mathbf u}.
+\nabla f(\mathbf a)\cdot\mathbf h
+=
+\frac{\partial f}{\partial x_1}(\mathbf a)h_1
++\cdots+
+\frac{\partial f}{\partial x_n}(\mathbf a)h_n.
 $$
 
-The dot product is a weighted sum of partial derivatives. The sum appears because a movement such as $\mathbf h=(h_1,\ldots,h_n)$ is composed of movements along the coordinate axes. Differentiability says that, to first order, the effects of those component movements combine linearly.
+Each term predicts one coordinate's contribution to the change in $f$. For example, $\frac{\partial f}{\partial x_1}(\mathbf a)h_1$ is the change caused by moving $h_1$ in the first coordinate. **We add the terms because the complete movement combines all of these coordinate movements. When the movement is small, differentiability tells us that this sum is a good approximation of the total change.**
 
 ## How This Becomes Backpropagation
 

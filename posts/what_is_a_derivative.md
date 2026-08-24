@@ -65,9 +65,35 @@ $$
 
 The prediction is close because the movement is small. For $h=10$, the derivative predicts a change of $60$, while the exact change is $160$. The derivative still accepts the input $h=10$, but its approximation meaning is local.
 
+## Formal Definition of a Derivative
+
+Let $f:\mathbb R^n\to\mathbb R^m$. The function $f$ is **differentiable at $\mathbf a$** if there is a linear map
+
+$$
+L:\mathbb R^n\to\mathbb R^m
+$$
+
+such that
+
+$$
+\lim_{\mathbf h\to\mathbf 0}
+\frac{
+\left\|f(\mathbf a+\mathbf h)-f(\mathbf a)-L(\mathbf h)\right\|
+}{\|\mathbf h\|}
+=0.
+$$
+
+If such a map exists, it is unique. This linear map is the derivative of $f$ at $\mathbf a$, and we write it as
+
+$$
+Df(\mathbf a)=L.
+$$
+
+The expression $L(\mathbf h)$ is the derivative's prediction of the output change caused by the input movement $\mathbf h$. The limit says that the remaining prediction error becomes negligible compared with the size of $\mathbf h$ as $\mathbf h$ approaches zero.
+
 ## Is the Derivative a Number or a Linear Map?
 
-In one-dimensional calculus, $f'(a)$ is a number. More formally, the derivative at $a$ is the linear map:
+The formal definition makes the derivative a linear map. Why, then, is $f'(a)$ usually presented as a number in one-dimensional calculus? Every linear map from $\mathbb R$ to $\mathbb R$ is multiplication by some number, so the derivative map can be written as:
 
 $$
 Df(a):h\mapsto f'(a)h.
@@ -79,7 +105,7 @@ $$
 Df(3)[h]=6h.
 $$
 
-The number $6$ represents the map $h\mapsto6h$. Every linear map from $\mathbb R$ to $\mathbb R$ has this form, so elementary calculus usually identifies the map with its single scalar coefficient.
+The number $6$ represents the complete map $h\mapsto6h$. Elementary calculus therefore identifies the derivative map with its single scalar coefficient.
 
 This distinction becomes useful in several dimensions, where one number is no longer enough.
 
@@ -105,27 +131,117 @@ f(\mathbf a+\mathbf h)-f(\mathbf a)
 Df(\mathbf a)[\mathbf h].
 $$
 
-After coordinates are chosen, the Jacobian matrix represents this linear map:
+The **Jacobian** is a table containing every first partial derivative of the function. If
+
+$$
+f(\mathbf x)=
+\begin{bmatrix}
+f_1(\mathbf x)\\
+\vdots\\
+f_m(\mathbf x)
+\end{bmatrix},
+$$
+
+then its Jacobian at $\mathbf a$ is the $m\times n$ matrix:
+
+$$
+J_f(\mathbf a)=
+\begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}(\mathbf a) & \cdots & \frac{\partial f_1}{\partial x_n}(\mathbf a)\\
+\vdots & \ddots & \vdots\\
+\frac{\partial f_m}{\partial x_1}(\mathbf a) & \cdots & \frac{\partial f_m}{\partial x_n}(\mathbf a)
+\end{bmatrix}.
+$$
+
+When $f:\mathbb R^n\to\mathbb R$ has only one output, $m=1$, so the Jacobian has only one row:
+
+$$
+J_f(\mathbf a)=
+\begin{bmatrix}
+\frac{\partial f}{\partial x_1}(\mathbf a) & \cdots & \frac{\partial f}{\partial x_n}(\mathbf a)
+\end{bmatrix}.
+$$
+
+Formally, this is a $1\times n$ matrix, but it is usually treated as a row vector. The gradient contains the same derivatives as a column vector:
+
+$$
+J_f(\mathbf a)=\nabla f(\mathbf a)^\mathsf T.
+$$
+
+For example, if
+
+$$
+f(x,y)=x^2+3y,
+$$
+
+then the single-output Jacobian is the row vector
+
+$$
+J_f(x,y)=
+\begin{bmatrix}
+2x & 3
+\end{bmatrix}.
+$$
+
+At $(x,y)=(2,1)$, it becomes $J_f(2,1)=\begin{bmatrix}4 & 3\end{bmatrix}$. This says that near $(2,1)$, a small movement $h_x$ in $x$ contributes approximately $4h_x$ to the output change, while a small movement $h_y$ in $y$ contributes approximately $3h_y$.
+
+Each row describes how one output changes with all the inputs. Each column describes how one input affects all the outputs. Multiplying the Jacobian by a small input movement $\mathbf h$ combines these effects to predict the resulting output movement:
 
 $$
 Df(\mathbf a)[\mathbf h]=
 J_f(\mathbf a)\mathbf h.
 $$
 
-The Jacobian is not a different derivative. It is the matrix representation of the derivative map.
-
-If $f:\mathbb R^n\to\mathbb R$ has one scalar output, its Jacobian is a row vector and the gradient is conventionally the corresponding column vector:
+For example, consider:
 
 $$
-J_f(\mathbf a)=\nabla f(\mathbf a)^\mathsf T.
+f(x,y)=
+\begin{bmatrix}
+x^2+y\\
+xy
+\end{bmatrix}.
 $$
 
-Therefore:
+Its Jacobian is:
 
 $$
-Df(\mathbf a)[\mathbf h]=
-\nabla f(\mathbf a)\cdot\mathbf h.
+J_f(x,y)=
+\begin{bmatrix}
+2x & 1\\
+y & x
+\end{bmatrix}.
 $$
+
+At $(x,y)=(2,3)$, this becomes:
+
+$$
+J_f(2,3)=
+\begin{bmatrix}
+4 & 1\\
+3 & 2
+\end{bmatrix}.
+$$
+
+If the input moves by $\mathbf h=(0.01,-0.02)$, the predicted output movement is:
+
+$$
+J_f(2,3)\mathbf h=
+\begin{bmatrix}
+4 & 1\\
+3 & 2
+\end{bmatrix}
+\begin{bmatrix}
+0.01\\
+-0.02
+\end{bmatrix}
+=
+\begin{bmatrix}
+0.02\\
+-0.01
+\end{bmatrix}.
+$$
+
+So a small input movement of $(0.01,-0.02)$ produces an output movement of approximately $(0.02,-0.01)$. The Jacobian is not a different derivative; it is the matrix that represents the derivative map in coordinates.
 
 ## What "First-Order" Means
 
