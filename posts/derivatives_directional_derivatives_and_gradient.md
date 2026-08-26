@@ -1,4 +1,4 @@
-# Derivatives, Directional Derivatives, and Gradients: A Practical Map
+# Derivatives Practical Map
 
 Derivatives become easier to understand when they are treated as one connected idea instead of a collection of formulas:
 

@@ -62,7 +62,7 @@ For $h=0.01$, the predicted change is $0.06$. The exact change is:
 $$
 (3.01)^2-3^2=0.0601.
 $$
-
+8
 The prediction is close because the movement is small. For $h=10$, the derivative predicts a change of $60$, while the exact change is $160$. The derivative still accepts the input $h=10$, but its approximation meaning is local.
 
 ## Formal Definition of a Derivative
@@ -83,6 +83,15 @@ $$
 =0.
 $$
 
+This requires the **prediction error**
+
+$$
+f(\mathbf a+\mathbf h)-f(\mathbf a)-L(\mathbf h)
+$$
+
+must approach zero faster than $\|\mathbf h\|$. In asymptotic notation, this
+error is $o(\|\mathbf h\|)$.
+
 If such a map exists, it is unique. This linear map is the derivative of $f$ at $\mathbf a$, and we write it as
 
 $$
@@ -91,9 +100,9 @@ $$
 
 The expression $L(\mathbf h)$ is the derivative's prediction of the output change caused by the input movement $\mathbf h$. The limit says that the remaining prediction error becomes negligible compared with the size of $\mathbf h$ as $\mathbf h$ approaches zero.
 
-## Is the Derivative a Number or a Linear Map?
+### Question: If the derivative is a linear map, why is $f'(a)$ a number?
 
-The formal definition makes the derivative a linear map. Why, then, is $f'(a)$ usually presented as a number in one-dimensional calculus? Every linear map from $\mathbb R$ to $\mathbb R$ is multiplication by some number, so the derivative map can be written as:
+Every linear map from $\mathbb R$ to $\mathbb R$ is multiplication by some number, so the derivative map can be written as:
 
 $$
 Df(a):h\mapsto f'(a)h.
@@ -105,9 +114,12 @@ $$
 Df(3)[h]=6h.
 $$
 
-The number $6$ represents the complete map $h\mapsto6h$. Elementary calculus therefore identifies the derivative map with its single scalar coefficient.
-
-This distinction becomes useful in several dimensions, where one number is no longer enough.
+The number $6$ is the one-dimensional coordinate representation of the map
+$h\mapsto6h$. More generally, a scalar in one dimension and a Jacobian matrix
+in several dimensions represent derivative maps; multiplying the representation
+by an input displacement applies the map. They are commonly identified with the
+maps they represent because, once coordinates are fixed, they determine those
+maps completely.
 
 ## The Derivative in Several Dimensions
 
