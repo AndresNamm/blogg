@@ -1,3 +1,4 @@
+
 # What Is a Derivative?
 
 The shortest useful answer is:
@@ -19,14 +20,13 @@ The numerator is the output change, the denominator is the input change, and the
 The limit formula measures the slope at $a$. The same derivative can predict the output change caused by a small finite movement $h$:
 
 $$
-f(a+h)-f(a)\approx f'(a)h.
+f(a+h)-f(a)\approx
+\left(
+\lim_{\delta\to0}
+\frac{f(a+\delta)-f(a)}{\delta}
+\right)h \approx f'(a)h
 $$
 
-Equivalently:
-
-$$
-f(a+h)\approx f(a)+f'(a)h.
-$$
 
 Read this as:
 
@@ -62,7 +62,7 @@ For $h=0.01$, the predicted change is $0.06$. The exact change is:
 $$
 (3.01)^2-3^2=0.0601.
 $$
-8
+
 The prediction is close because the movement is small. For $h=10$, the derivative predicts a change of $60$, while the exact change is $160$. The derivative still accepts the input $h=10$, but its approximation meaning is local.
 
 ## Formal Definition of a Derivative
@@ -92,13 +92,19 @@ $$
 must approach zero faster than $\|\mathbf h\|$. In asymptotic notation, this
 error is $o(\|\mathbf h\|)$.
 
-If such a map exists, it is unique. This linear map is the derivative of $f$ at $\mathbf a$, and we write it as
+If such a map exists, it is unique. 
+**This linear map is the derivative of $f$ at $\mathbf a$**, and we write it as
 
 $$
 Df(\mathbf a)=L.
 $$
 
+
 The expression $L(\mathbf h)$ is the derivative's prediction of the output change caused by the input movement $\mathbf h$. The limit says that the remaining prediction error becomes negligible compared with the size of $\mathbf h$ as $\mathbf h$ approaches zero.
+
+
+- This linear map is in its most general form expressed as a matrix of partial derivatives  where in rows You have derivatives of how each input variable affects the partic output function
+- This matrix is called the Jacobian
 
 ### Question: If the derivative is a linear map, why is $f'(a)$ a number?
 

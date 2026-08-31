@@ -4,14 +4,20 @@ Derivatives become easier to understand when they are treated as one connected i
 
 > Near a point, a differentiable function behaves like a linear map from a small input movement to the resulting output movement.
 
-This series develops that idea through four questions.
+This series develops that idea through four separate blogposts.
+
+# Thorough Overview
 
 - [What Is a Derivative?](what_is_a_derivative.md)
 - [Directional Derivatives and Why They Are Sums](directional_derivative_and_why_it_is_a_sum.md)
 - [How Derivatives Work in Neural Networks](micrograd_gradient_accumulation.md)
 - [Why the Gradient Points Toward Steepest Ascent](gradient_direction_of_steepest_ascent.md)
 
-## The Whole Idea in Four Equations
+If you want to get idea quickly, below is short recap
+
+# Short Recap
+
+
 
 For a single-variable function, the derivative is introduced as a local rate:
 
