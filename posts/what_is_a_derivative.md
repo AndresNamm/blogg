@@ -92,7 +92,6 @@ $$
 must approach zero faster than $\|\mathbf h\|$. In asymptotic notation, this
 error is $o(\|\mathbf h\|)$.
 
-If such a map exists, it is unique. 
 **This linear map is the derivative of $f$ at $\mathbf a$**, and we write it as
 
 $$
@@ -103,51 +102,10 @@ $$
 The expression $L(\mathbf h)$ is the derivative's prediction of the output change caused by the input movement $\mathbf h$. The limit says that the remaining prediction error becomes negligible compared with the size of $\mathbf h$ as $\mathbf h$ approaches zero.
 
 
-- This linear map is in its most general form expressed as a matrix of partial derivatives  where in rows You have derivatives of how each input variable affects the partic output function
+- In coordinates, this linear map is represented by a matrix of partial derivatives. Each row corresponds to one output function, and each cell in that row shows how one input variable affects that output.
 - This matrix is called the Jacobian
 
-### Question: If the derivative is a linear map, why is $f'(a)$ a number?
 
-Every linear map from $\mathbb R$ to $\mathbb R$ is multiplication by some number, so the derivative map can be written as:
-
-$$
-Df(a):h\mapsto f'(a)h.
-$$
-
-For the previous example:
-
-$$
-Df(3)[h]=6h.
-$$
-
-The number $6$ is the one-dimensional coordinate representation of the map
-$h\mapsto6h$. More generally, a scalar in one dimension and a Jacobian matrix
-in several dimensions represent derivative maps; multiplying the representation
-by an input displacement applies the map. They are commonly identified with the
-maps they represent because, once coordinates are fixed, they determine those
-maps completely.
-
-## The Derivative in Several Dimensions
-
-For:
-
-$$
-f:\mathbb R^n\to\mathbb R^m,
-$$
-
-the derivative at $\mathbf a$ is a linear map:
-
-$$
-Df(\mathbf a):\mathbb R^n\to\mathbb R^m.
-$$
-
-Its input $\mathbf h$ is a displacement in the input space. Its output $Df(\mathbf a)[\mathbf h]$ is the first-order predicted displacement in the output space:
-
-$$
-f(\mathbf a+\mathbf h)-f(\mathbf a)
-\approx
-Df(\mathbf a)[\mathbf h].
-$$
 
 The **Jacobian** is a table containing every first partial derivative of the function. If
 
@@ -180,7 +138,9 @@ J_f(\mathbf a)=
 \end{bmatrix}.
 $$
 
-Formally, this is a $1\times n$ matrix, but it is usually treated as a row vector. The gradient contains the same derivatives as a column vector:
+For a scalar-valued function, the Jacobian is therefore a $1\times n$ row
+matrix. **NB** The gradient contains the same partial derivatives but arranges them as
+an $n\times1$ column vector. Thus, the Jacobian is the transpose of the gradient:
 
 $$
 J_f(\mathbf a)=\nabla f(\mathbf a)^\mathsf T.
@@ -263,6 +223,15 @@ So a small input movement of $(0.01,-0.02)$ produces an output movement of appro
 
 ## What "First-Order" Means
 
+
+Based on formal definition of derivative we can also predict change using derivatives in multiple dimensions:
+
+$$
+f(\mathbf a+\mathbf h)-f(\mathbf a)
+\approx
+Df(\mathbf a)[\mathbf h].
+$$
+
 The exact definition separates the function's change into a linear prediction and a remainder:
 
 $$
@@ -279,7 +248,7 @@ $$
 \mathbf h\to\mathbf0.
 $$
 
-This says the error becomes negligible compared with the size of the movement.
+This says the error becomes negligible compared with the size of the movement. And if h approaches 0, we again have the definition of derivative.
 
 Terms proportional to one small movement are first-order. Terms such as $h_x^2$ or $h_xh_y$ are second-order: if every component has size roughly $\varepsilon$, first-order terms have size roughly $\varepsilon$, while second-order terms have size roughly $\varepsilon^2$ and disappear faster.
 
@@ -287,7 +256,7 @@ The derivative keeps the first-order part. Curvature and interactions remain in 
 
 ## Why the Derivative Must Be Linear
 
-A small combined movement can be decomposed into component movements. The first-order model must satisfy:
+A linear map can be decomposed into component movements. The first-order model must satisfy:
 
 $$
 Df(\mathbf a)[\mathbf u+\mathbf v]=
@@ -303,7 +272,7 @@ Df(\mathbf a)[c\mathbf u]=
 cDf(\mathbf a)[\mathbf u].
 $$
 
-This is what makes the derivative usable: it predicts the effect of any small movement by combining the effects of simpler movements.
+This is what makes the derivative usable even in case of multivariable inputs: it predicts the effect of any small movement by combining the effects of simpler movements.
 
 ## Summary
 
