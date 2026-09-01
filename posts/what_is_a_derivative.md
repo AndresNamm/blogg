@@ -279,9 +279,18 @@ first-order derivative term dominates the error. That is why speaking about
 significant as the input movement approaches zero. Curvature and interactions,
 such as $h_x^2$ and $h_xh_y$, remain in the higher-order error.
 
-## Why the Derivative Must Be Linear
+## Why the Derivative Is a sum?
 
-A linear map can be decomposed into component movements. The first-order model must satisfy:
+In several dimensions, one input movement can be split into simpler movements.
+For example, a movement in two variables can be written as
+
+$$
+(h_x,h_y)=(h_x,0)+(0,h_y).
+$$
+
+We can therefore predict the effect of moving in the $x$ direction and the
+effect of moving in the $y$ direction separately. To first order, the prediction
+for doing both must be the sum of those two predictions. In general,
 
 $$
 Df(\mathbf a)[\mathbf u+\mathbf v]=
@@ -297,7 +306,24 @@ Df(\mathbf a)[c\mathbf u]=
 cDf(\mathbf a)[\mathbf u].
 $$
 
-This is what makes the derivative usable even in case of multivariable inputs: it predicts the effect of any small movement by combining the effects of simpler movements.
+These two properties follow the first-order idea from the previous section. A
+first-order term contains exactly one power of the input movement. Therefore,
+each component can only contribute a scaled term such as $c_xh_x$ or $c_yh_y$,
+and the complete first-order prediction has the form
+
+$$
+c_xh_x+c_yh_y.
+$$
+
+The contributions add, and scaling the entire movement scales the prediction by
+the same amount. This is precisely what the two linearity equations express.
+
+An interaction such as $h_xh_y$ contains two powers of the movement, so it is
+second-order. It shrinks faster than the first-order terms as the movement
+approaches zero and belongs to the remainder rather than the derivative. Thus,
+the derivative is linear because it keeps only the first-order component
+effects. The Jacobian stores those effects in its columns, and matrix
+multiplication adds them to predict the effect of the full movement.
 
 ## Summary
 

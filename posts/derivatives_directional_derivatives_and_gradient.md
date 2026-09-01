@@ -8,7 +8,7 @@ This series develops that idea through four separate blogposts.
 
 # Thorough Overview
 
-- [What Is a Derivative?](what_is_a_derivative.md)
+- [What Is a Derivative?, Why is it a sum?](what_is_a_derivative.md)
 - [Directional Derivatives and Why They Are Sums](directional_derivative_and_why_it_is_a_sum.md)
 - [How Derivatives Work in Neural Networks](micrograd_gradient_accumulation.md)
 - [Why the Gradient Points Toward Steepest Ascent](gradient_direction_of_steepest_ascent.md)
