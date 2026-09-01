@@ -223,16 +223,40 @@ So a small input movement of $(0.01,-0.02)$ produces an output movement of appro
 
 ## What "First-Order" Means
 
+Why do we call the derivative a **first-order** approximation? Because its
+prediction scales directly with the size of the input movement. If we shrink
+$\mathbf h$ by a factor of two, linearity gives
 
-Based on formal definition of derivative we can also predict change using derivatives in multiple dimensions:
+$$
+Df(\mathbf a)\left[\frac{1}{2}\mathbf h\right]
+=\frac{1}{2}Df(\mathbf a)[\mathbf h].
+$$
+
+This direct scaling with one power of the movement is what **first-order**
+means. By contrast, a second-order term scales with the square of the movement:
+halving $h$ makes $h^2$ four times smaller.
+
+The earlier function $f(x)=x^2$ makes this visible. Its exact change at $a$ is
+
+$$
+(a+h)^2-a^2=2ah+h^2.
+$$
+
+The derivative predicts the first-order term $2ah$. The remaining term $h^2$
+comes from curvature. As $h$ becomes smaller, $h^2$ shrinks faster than $h$, so
+the derivative accounts for an increasingly large proportion of the total
+change.
+
+The same idea applies in multiple dimensions. The derivative gives the linear,
+first-order prediction
 
 $$
 f(\mathbf a+\mathbf h)-f(\mathbf a)
-\approx
-Df(\mathbf a)[\mathbf h].
+\approx Df(\mathbf a)[\mathbf h].
 $$
 
-The exact definition separates the function's change into a linear prediction and a remainder:
+More precisely, the exact change can be separated into this prediction and a
+remainder:
 
 $$
 f(\mathbf a+\mathbf h)-f(\mathbf a)=
@@ -248,11 +272,12 @@ $$
 \mathbf h\to\mathbf0.
 $$
 
-This says the error becomes negligible compared with the size of the movement. And if h approaches 0, we again have the definition of derivative.
-
-Terms proportional to one small movement are first-order. Terms such as $h_x^2$ or $h_xh_y$ are second-order: if every component has size roughly $\varepsilon$, first-order terms have size roughly $\varepsilon$, while second-order terms have size roughly $\varepsilon^2$ and disappear faster.
-
-The derivative keeps the first-order part. Curvature and interactions remain in the higher-order error.
+This condition says more than merely $r(\mathbf h)\to0$: the error must approach
+zero faster than $\|\mathbf h\|$. Therefore, close enough to $\mathbf a$, the
+first-order derivative term dominates the error. That is why speaking about
+"first order" matters: it identifies the part of the change that remains most
+significant as the input movement approaches zero. Curvature and interactions,
+such as $h_x^2$ and $h_xh_y$, remain in the higher-order error.
 
 ## Why the Derivative Must Be Linear
 
