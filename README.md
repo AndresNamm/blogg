@@ -34,6 +34,18 @@ npm run watch
 
 Push to main/master branch. GitHub Actions will automatically build and deploy.
 
+## Copilot plugin
+
+This repo is also a GitHub Copilot CLI plugin (`blogg-math-skills`, Agent Plugins 1.0, see `plugin.json`). It contains four skills in `skills/` (`statistics`, `calculus`, `algebra`, `neural_network`) that explain math in plain language and point Copilot to the relevant posts in `posts/`.
+
+```bash
+copilot plugin install AndresNamm/blogg   # install
+copilot plugin list                       # verify
+# inside Copilot CLI: /skills list
+copilot plugin update blogg-math-skills
+copilot plugin uninstall blogg-math-skills
+```
+
 ## Dependencies
 
 - `marked` - Markdown parser

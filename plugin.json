@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "blogg-math-skills",
+  "version": "0.1.0",
+  "description": "Math explanation skills (statistics, calculus, algebra/geometry, neural networks) backed by Andres Namm's blog posts.",
+  "author": {
+    "name": "Andres Namm"
+  },
+  "repository": "https://github.com/AndresNamm/blogg",
+  "license": "MIT",
+  "keywords": ["math", "statistics", "calculus", "linear-algebra", "neural-networks", "blog", "learning"]
+}
