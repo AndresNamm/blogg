@@ -1,0 +1,18 @@
+{
+  "name": "blogg",
+  "owner": {
+    "name": "Andres Namm"
+  },
+  "metadata": {
+    "description": "Math explanation skills backed by blog posts",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "blogg-math-skills",
+      "description": "Statistics, calculus, algebra and neural network explainer skills backed by Andres Namm's blog posts.",
+      "version": "0.1.0",
+      "source": "."
+    }
+  ]
+}
