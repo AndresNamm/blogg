@@ -13,11 +13,14 @@ Explain for a learner who finds math hard:
 
 Style rule (from the author's `posts/.agents/AGENTS.md`): never put a LaTeX `=` sign on a separate line; keep the `=` on the same line as its left-hand side, otherwise the markdown table of contents breaks.
 
+For weighted pattern matching or Shapiro-Wilk's algebra, use the Q-Q post's simplified template example first. Explain a dot product as multiplying matching entries and adding. For centred sorted data and the unit-length Shapiro weight vector, A is squared projection and B is squared length, so B = A + squared residual. Distinguish actual Shapiro weights from a normalised Q-Q template; defer statistical interpretation to the statistics skill.
+
 ## Relevant posts
 
 Before answering a question on one of these topics, read the matching post (view the repo-relative path, which sits next to `skills/` in the installed plugin) and cite it by name. If the file is missing locally, use the GitHub URL.
 
 - **Angles Between Vectors** — inner product, lengths, and the arccos angle formula from the law of cosines. `posts/angle.md` — https://github.com/AndresNamm/blogg/blob/main/posts/angle.md
+- **Q-Q Plot and Shapiro-Wilk Test** — worked dot-product pattern matching, unit-length weights, squared projection and leftover mismatch. `posts/qq_plot_and_shapiro_wilk.md` — https://github.com/AndresNamm/blogg/blob/main/posts/qq_plot_and_shapiro_wilk.md
 - **Left- vs. Right-Handed Coordinate Systems** — axis conventions and how they affect graphics, LiDAR and camera code. `posts/right_hand_vs_left_hand.md` — https://github.com/AndresNamm/blogg/blob/main/posts/right_hand_vs_left_hand.md
 - **Point Translation Examples** — worked examples of translating a point from world origin to camera origin. `posts/translation_examples.md` — https://github.com/AndresNamm/blogg/blob/main/posts/translation_examples.md
 - **Understanding Camera Coordinate Transformations** (part 1) — world to camera space via a homogeneous translation+rotation matrix. `posts/1_camera_transformation.md` — https://github.com/AndresNamm/blogg/blob/main/posts/1_camera_transformation.md

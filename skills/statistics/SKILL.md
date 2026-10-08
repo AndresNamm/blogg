@@ -1,6 +1,6 @@
 ---
 name: statistics
-description: Use when the user asks about statistics or probability, e.g. normality, Q-Q plot, Shapiro-Wilk, t-test, Wilcoxon, bootstrap, probability space, Bayes, Bayesian learning, normal distribution, density function (PDF), mean/std, classification metrics (accuracy, precision, recall, F1, confusion matrix).
+description: Use when the user asks about statistics or probability, e.g. normality, Q-Q plot, Shapiro-Wilk weights or W, p-values, variance, t-test, Wilcoxon, bootstrap, probability space, Bayes, Bayesian learning, normal distribution, density function (PDF), mean/std, classification metrics (accuracy, precision, recall, F1, confusion matrix).
 ---
 
 # Statistics explainer
@@ -13,6 +13,17 @@ Explain for a learner who finds math hard:
 
 Style rule (from the author's `posts/.agents/AGENTS.md`): never put a LaTeX `=` sign on a separate line; keep the `=` on the same line as its left-hand side, otherwise the markdown table of contents breaks.
 
+## Explaining Shapiro-Wilk
+
+Read the Q-Q post below first. Start with its five-value example and explain one component at a time: paired gaps and fixed weights give A; squared distances from the mean give B; then W = A/B.
+
+- Weights depend only on sample size. They are related to normal order statistics, but are not the Q-Q x values.
+- A alone has no good/bad cutoff. B is a sum of squared deviations; sample variance is B/(n-1).
+- Explain why the ratio works through the post's clearly labelled simplified pattern-multiplication example. The actual weights are covariance-adjusted; do not present the simplified example as the Shapiro algorithm.
+- Both A and B involve squaring. Do not claim only B squares an outlier or that W is literally ordinary Q-Q correlation.
+- Explain p using an imagined reference table of normal samples of the same size. SciPy uses published approximations, not a fresh simulation. Small p means evidence against normality, not the probability that the data is normal.
+- Do not automatically reject a t-test because Shapiro rejects normality. Consider independence, skew, outliers, sample size and the target statistic. Wilcoxon signed-rank is not assumption-free or a mean test; log transforms require strictly positive inputs.
+
 ## Relevant posts
 
 Before answering a question on one of these topics, read the matching post (view the repo-relative path, which sits next to `skills/` in the installed plugin) and cite it by name. If the file is missing locally, use the GitHub URL.
@@ -21,4 +32,4 @@ Before answering a question on one of these topics, read the matching post (view
 - **Normal Distribution & Probability Density** — Q&A on the normal PDF, why it integrates to 1, what a density value means. `posts/normal_distribution_density.md` — https://github.com/AndresNamm/blogg/blob/main/posts/normal_distribution_density.md
 - **Idea Behind Bayesian Learning** — Bayes formula, putting a probability distribution on model parameters instead of a single point estimate. `posts/intro_to_bayesian_learning.md` — https://github.com/AndresNamm/blogg/blob/main/posts/intro_to_bayesian_learning.md
 - **Classification Metrics** — accuracy, precision, recall and related metrics from TP/TN/FP/FN. `posts/metrics.md` — https://github.com/AndresNamm/blogg/blob/main/posts/metrics.md
-- **Q-Q plot and Shapiro-Wilk** — checking normality with a Q-Q plot and the Shapiro-Wilk test (may be added shortly; check it exists). `posts/qq_plot_and_shapiro_wilk.md` — https://github.com/AndresNamm/blogg/blob/main/posts/qq_plot_and_shapiro_wilk.md
+- **Q-Q Plot and Shapiro-Wilk Test** — normal quantiles versus weights, worked A/B calculations, pattern matching, variance versus sum of squares, and p-values from the normal reference distribution. `posts/qq_plot_and_shapiro_wilk.md` — https://github.com/AndresNamm/blogg/blob/main/posts/qq_plot_and_shapiro_wilk.md
