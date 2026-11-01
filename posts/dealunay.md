@@ -151,6 +151,6 @@ The new triangles are **ABE, BCE, CDE and ADE**. In a larger example, a point be
 No. The empty-circle rule decides how to connect the points. The 25 cm rule comes **after** the Delaunay triangles are complete: it keeps triangles whose circle radius is at most 25 cm and removes the others from the area calculation.
 
 
-# Reference9
+# Reference
 
 https://www.youtube.com/watch?v=GKVBOxzQ69E
