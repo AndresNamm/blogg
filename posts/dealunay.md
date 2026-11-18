@@ -53,6 +53,14 @@ After making the Delaunay triangles, we apply a second rule:
 
 A triangle with a circle radius of exactly 25 cm is kept. A triangle with a radius greater than 25 cm is removed.
 
+Why remove these triangles? Delaunay triangulation fills the convex boundary of the points, even across gaps. The radius cutoff can remove triangles that bridge such gaps, so the resulting shape can follow the points more closely. It is a chosen setting, not a guarantee of the true log boundary. A large circumradius can also result from a thin triangle, not only from long edges.
+
+Here is an example from a measured log end:
+
+![Delaunay triangles on a log end, with retained triangles in green and removed triangles marked in orange](images/delaunay_log_alpha_shape.png)
+
+The black points are projected onto the fitted plane. With a cutoff of 0.25 m, 24,267 triangles are kept and 10 are removed. Green shows the kept triangles; orange marks the removed triangles. Their areas are not included in the measurement.
+
 The two rules do different jobs:
 
  - Delaunay rule: Is another dot inside the circle? This decides the connections.
@@ -62,17 +70,12 @@ The two rules do different jobs:
 
 Suppose we have a square, 30 cm wide and 30 cm high, with another dot near its top edge. The Delaunay rule produces four triangles:
 
-┌──────────┬───────────────┬─────────┬────────────────┐
-│ Triangle │ Circle radius │ Area    │ Keep at 25 cm? │
-├──────────┼───────────────┼─────────┼────────────────┤
-│ Bottom   │ 17.33 cm      │ 390 cm² │ Yes            │
-├──────────┼───────────────┼─────────┼────────────────┤
-│ Right    │ 15.53 cm      │ 225 cm² │ Yes            │
-├──────────┼───────────────┼─────────┼────────────────┤
-│ Top      │ 30.13 cm      │ 60 cm²  │ No             │
-├──────────┼───────────────┼─────────┼────────────────┤
-│ Left     │ 15.53 cm      │ 225 cm² │ Yes            │
-└──────────┴───────────────┴─────────┴────────────────┘
+| Triangle | Circle radius | Area | Keep at 25 cm? |
+|---|---:|---:|---|
+| Bottom | 17.33 cm | 390 cm² | Yes |
+| Right | 15.53 cm | 225 cm² | Yes |
+| Top | 30.13 cm | 60 cm² | No |
+| Left | 15.53 cm | 225 cm² | Yes |
 
 We add the kept areas: 390 + 225 + 225 = 840 cm², or 0.084 m². The removed top triangle leaves a small indentation.
 
@@ -97,6 +100,8 @@ The scaffold must be chosen carefully: simply surrounding the dots is not enough
 ### Are points added one at a time?
 
 In one conceptual method, yes. We choose a real dot, add it, and update the triangles. Then we do the same for the next dot. This is one way to understand the process, not the only way to build a Delaunay triangulation.
+
+The points can be considered in different orders, including a random order. We do not create random measurement points. The actual measurement code passes the point set to SciPy's Delaunay implementation; this explanation does not describe its internal insertion order.
 
 ### Why can we add a point inside a triangle's circle?
 
@@ -128,6 +133,36 @@ We keep the edges **AB, BC, CD and DA** as the boundary of the gap. We remove th
 
 More generally, an edge belonging to only one removed triangle is on the gap boundary. An edge shared by two removed triangles is inside the gap.
 
+### How does the algorithm find the boundary edges?
+
+It counts how many removed triangles use each edge. The order of the edge's endpoints does not matter: AC and CA are the same edge.
+
+For the example above:
+
+```text
+Removed triangle ABC: AB, BC, AC
+Removed triangle ACD: AC, CD, DA
+```
+
+AC occurs twice, so it is an internal edge. AB, BC, CD and DA each occur once, so they form the gap boundary. The algorithm keeps these boundary edges and connects their endpoints to the new point E.
+
+### Can we see an example with five points?
+
+Use the four points A = (0, 0), B = (4, 0), C = (3, 3) and D = (0, 4). Suppose the existing triangulation contains ABC and ACD. Now add E = (2, 1):
+
+```text
+    D
+    | \
+    |   C
+    |  / \
+    | / E \
+    A-------B
+```
+
+The drawing is only a sketch. Before E is added, AC is the shared edge. The circumcircle of ABC has centre (2, 1) and radius √5. E is at that centre, so it is inside the circle. The circumcircle of ACD has centre (1, 2) and the same radius √5. E is √2 from that centre, so it is inside that circle too.
+
+Remove ABC and ACD. As in the edge count above, AC is internal to the gap, and AB, BC, CD and DA are its boundary. Connect E to A, B, C and D. The four replacement triangles are ABE, BCE, CDE and DAE. Only after completing the triangulation do we apply the separate circumradius cutoff.
+
 ### Do we delete triangles or edges?
 
 Both descriptions help. In the list of triangles, the old triangles **ABC** and **ACD** are removed and replaced. In the drawing, we can think of erasing their shared diagonal **AC**, keeping the outside edges, and drawing new edges.
@@ -154,3 +189,5 @@ No. The empty-circle rule decides how to connect the points. The 25 cm rule come
 # Reference
 
 https://www.youtube.com/watch?v=GKVBOxzQ69E
+
+https://www.youtube.com/watch?v=GctAunEuHt4
