@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where does the ray hit? — Ray–plane intersection</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #172539;
+    --muted: #43536a;
+    --rule: #d3dfe9;
+    --ray: #5132a0;
+    --plane: #00645c;
+    --normal: #875000;
+    --depth: #1c508a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #eaf0f6; color: var(--ink); font: 1rem/1.53 system-ui, sans-serif; }
+  header { background: #152740; color: #fff; padding: 3.5rem 1rem 2.8rem; }
+  .wrap { width: min(100% - 2rem, 66rem); margin-inline: auto; }
+  .eyebrow { margin: 0 0 .45rem; color: #b6e4dc; font-size: .83rem; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+  h1 { margin: 0; font-size: clamp(2.4rem, 7vw, 4.55rem); line-height: 1.04; letter-spacing: -.05em; }
+  header .intro { max-width: 39rem; margin: .9rem 0 0; color: #e0eaf4; font-size: 1.12rem; }
+  main { padding-block: 1.55rem 2.5rem; }
+  .setup { padding: .85rem 1.1rem; margin: 0 0 1.35rem; background: #fff; border: 1px solid var(--rule); border-inline-start: .3rem solid var(--plane); border-radius: .65rem; }
+  .setup p { margin: .25rem 0; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.3rem; }
+  article { margin: 0; min-width: 0; background: #fff; border: 1px solid var(--rule); border-radius: .85rem; padding: 1rem; box-shadow: 0 .35rem 1rem #223c5810; }
+  h2 { display: flex; align-items: baseline; gap: .55rem; margin: 0 0 .7rem; font-size: clamp(1.05rem, 2.4vw, 1.42rem); line-height: 1.25; }
+  .num { flex: 0 0 auto; border-radius: .4rem; padding: .21rem .36rem; background: #edf2fb; color: #384b73; font-size: .78rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .diagram { display: block; width: 100%; height: auto; background: #f7fafc; border: 1px solid #e0e8ef; border-radius: .6rem; }
+  article p { margin: .65rem 0 0; }
+  .eq { padding: .46rem .63rem; background: #f0edf8; border-radius: .4rem; color: #302059; font-variant-numeric: tabular-nums; }
+  .eq span { display: block; }
+  .meta { font-size: .91rem; color: var(--muted); }
+  footer { margin-block-start: 1.25rem; padding-block-start: .15rem; color: var(--muted); font-size: .89rem; }
+  .defs { position: absolute; width: 0; height: 0; }
+  .diagram text { fill: var(--ink); font: 600 14px system-ui, sans-serif; }
+  .diagram .small { font: 600 12px system-ui, sans-serif; }
+  .diagram .rtext { fill: var(--ray); }
+  .diagram .ptext { fill: var(--plane); }
+  .diagram .ntext { fill: var(--normal); }
+  .diagram .ztext { fill: var(--depth); }
+  .diagram path, .diagram line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .axis { stroke: #516780; stroke-width: 1.5; }
+  .wall { stroke: var(--plane); stroke-width: 3; }
+  .ray { stroke: var(--ray); stroke-width: 2.8; }
+  .normal { stroke: var(--normal); stroke-width: 2.9; }
+  .zdepth { stroke: var(--depth); stroke-width: 3; }
+  .guide { stroke: #62778d; stroke-width: 1.25; stroke-dasharray: 4 4; }
+  .hint { stroke: #62778d; stroke-width: 1.2; }
+  .right { stroke: #516780; stroke-width: 1.3; }
+  .alt { stroke: var(--ray); stroke-width: 2.15; stroke-dasharray: 5 5; }
+  .origin { fill: var(--ink); }
+  .pmark { fill: var(--plane); stroke: white; stroke-width: 1.5; }
+  .rmark { fill: var(--ray); stroke: white; stroke-width: 1.5; }
+  .nmark { fill: var(--normal); stroke: white; stroke-width: 1.5; }
+  @media (max-width: 48rem) {
+    .grid { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    header { padding-block: 2.7rem 2.1rem; }
+  }
+  @media (max-width: 25rem) {
+    .wrap { width: calc(100% - 1rem); }
+    article { padding: .72rem; }
+  }
+</style>
+</head>
+<body>
+<svg class="defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow-axis" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path fill="#516780" d="M0 0L10 5 0 10Z"/></marker>
+    <marker id="arrow-ray" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path fill="#5132a0" d="M0 0L10 5 0 10Z"/></marker>
+    <marker id="arrow-normal" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path fill="#875000" d="M0 0L10 5 0 10Z"/></marker>
+    <marker id="arrow-depth" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path fill="#1c508a" d="M0 0L10 5 0 10Z"/></marker>
+  </defs>
+</svg>
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Camera geometry · ten diagrams</p>
+    <h1>Where does the ray hit?</h1>
+    <p class="intro">A pixel tells us which way to look. A plane tells us where to stop. Find the hit by measuring how quickly the ray closes the gap to the plane.</p>
+  </div>
+</header>
+<main class="wrap">
+  <div class="setup">
+    <p><strong>One example:</strong> The camera is at <b>O</b>. <b>X</b> points right and the optical axis <b>Z</b> points forward (up on the page). Each spatial diagram shows the <b>Y = 0</b> slice, with coordinates in the order <b>(X, Z)</b>.</p>
+    <p>The fitted plane is the wall <b>X = 1 m</b>. A vertical line represents its trace in this slice. Diagram 06 puts the measurements on a number line instead.</p>
+  </div>
+  <div class="grid">
+    <article>
+      <h2><span class="num">01</span> A pixel picks a ray</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d1" xmlns="http://www.w3.org/2000/svg">
+        <title id="d1">A pixel to the right of the image center selects a ray tilted to the right of the optical axis.</title>
+        <path class="axis" d="M36 178H325" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M110 178V23" marker-end="url(#arrow-axis)"/>
+        <path class="guide" d="M43 132H191 M110 178L27.2 40"/>
+        <path class="ray" d="M110 178L179 40" marker-end="url(#arrow-ray)"/>
+        <circle class="origin" cx="110" cy="178" r="4"/>
+        <circle class="origin" cx="110" cy="132" r="3"/>
+        <circle class="rmark" cx="133" cy="132" r="4.7"/>
+        <text x="90" y="199">O</text>
+        <text x="331" y="183">X</text>
+        <text x="54" y="19">Z · optical axis</text>
+        <text x="188" y="45" class="rtext">ray through pixel</text>
+        <text x="142" y="120" class="small rtext">selected pixel</text>
+        <text x="199" y="136" class="small">image slice at Z = 1 m</text>
+      </svg>
+      <p>The ray starts at the camera and passes through the pixel's location on a virtual image plane. A pixel alone does not tell you how far along the ray to go.</p>
+      <p class="eq">Here: the pixel is at <b>(0.5, 1) m</b> on the image slice.</p>
+    </article>
+    <article>
+      <h2><span class="num">02</span> Give the ray one metre of forward depth</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d2" xmlns="http://www.w3.org/2000/svg">
+        <title id="d2">One ray step moves 0.5 metres right and 1 metre forward. The diagonal is longer than 1 metre.</title>
+        <path class="axis" d="M47 168H326" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M90 168V29" marker-end="url(#arrow-axis)"/>
+        <path class="zdepth" d="M90 168V72" marker-end="url(#arrow-depth)"/>
+        <path class="guide" d="M90 72H138"/>
+        <path class="ray" d="M90 168L138 72" marker-end="url(#arrow-ray)"/>
+        <circle class="origin" cx="90" cy="168" r="4"/>
+        <text x="73" y="190">O</text>
+        <text x="332" y="173">X</text>
+        <text x="80" y="21">Z</text>
+        <text x="74" y="116" text-anchor="end" class="ztext">1 m</text>
+        <text x="74" y="132" text-anchor="end" class="small ztext">forward</text>
+        <text x="114" y="52" text-anchor="middle" class="small">0.5 m right</text>
+        <text x="147" y="71" class="rtext">Q = (0.5, 1) m</text>
+        <text x="137" y="119" class="rtext">one q-step</text>
+      </svg>
+      <p>Move 1 m forward along Z and 0.5 m right along X. The combined move follows the ray. Its length is about 1.12 m, not 1 m.</p>
+      <p class="eq"><b>q = (0.5, 1)</b> is the direction per metre of forward depth. Its Z component is 1, but <b>q is not a unit vector</b>.</p>
+    </article>
+    <article>
+      <h2><span class="num">03</span> Pin down the plane</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d3" xmlns="http://www.w3.org/2000/svg">
+        <title id="d3">The wall X equals 1 metre contains P zero at (1, 3) and P one at (1, 1). Its unit normal points right at a right angle to the wall.</title>
+        <path class="axis" d="M37 186H326" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M73 186V31" marker-end="url(#arrow-axis)"/>
+        <path class="wall" d="M118 36V196"/>
+        <path class="right" d="M118 131H128V141"/>
+        <path class="normal" d="M118 141H163" marker-end="url(#arrow-normal)"/>
+        <circle class="pmark" cx="118" cy="51" r="5"/>
+        <circle class="pmark" cx="118" cy="141" r="5"/>
+        <circle class="origin" cx="73" cy="186" r="4"/>
+        <text x="58" y="205">O</text>
+        <text x="332" y="191">X</text>
+        <text x="66" y="24">Z</text>
+        <text x="132" y="36" class="ptext small">wall X = 1 m</text>
+        <text x="132" y="58" class="ptext">P₀ = (1, 3) m</text>
+        <text x="132" y="163" class="ptext">P₁ = (1, 1) m</text>
+        <text x="172" y="145" class="ntext">n = (1, 0) · unit normal</text>
+      </svg>
+      <p>Pick any point on the plane, such as P₀. It need not be the point the ray hits. The unit normal <b>n</b> has length 1 and points perpendicular to the plane.</p>
+      <p class="eq">P₀ and P₁ are on the same plane: both have <b>X = 1 m</b>.</p>
+    </article>
+    <article>
+      <h2><span class="num">04</span> Read the straight-across gap</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d4" xmlns="http://www.w3.org/2000/svg">
+        <title id="d4">Projecting the camera-to-P-zero arrow onto the normal gives F at (1, 0), the nearest point to the camera. The diagonal to P zero is longer.</title>
+        <path class="axis" d="M42 174H326" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M86 174V28" marker-end="url(#arrow-axis)"/>
+        <path class="wall" d="M131 28V183"/>
+        <path class="guide" d="M86 174L131 39"/>
+        <path class="right" d="M121 174V164H131"/>
+        <path class="normal" d="M86 174H131" marker-end="url(#arrow-normal)"/>
+        <path class="hint" d="M110.67 100L158 89"/>
+        <circle class="origin" cx="86" cy="174" r="4"/>
+        <circle class="pmark" cx="131" cy="39" r="5"/>
+        <circle class="nmark" cx="131" cy="174" r="3.5"/>
+        <text x="72" y="197">O</text>
+        <text x="332" y="179">X</text>
+        <text x="78" y="20">Z</text>
+        <text x="141" y="44" class="ptext">P₀ = (1, 3) m</text>
+        <text x="164" y="85" class="small">dashed: distance to P₀</text>
+        <text x="142" y="168" class="ptext">F = (1, 0) m</text>
+        <text x="109" y="204" class="ntext">signed gap +1 m</text>
+      </svg>
+      <p>Draw an arrow from the camera centre <b>O</b> to <b>P₀</b>. Now keep only the part that goes across the wall, at a right angle to it. In this picture, <b>P₀ = (1, 3) m</b>: 1 m right and 3 m forward. The unit normal <b>n = (1, 0)</b> points right, so the 3 m forward does not count. The projected arrow ends at <b>F = (1, 0) m</b>, the closest point on the wall.</p>
+      <p><b>n · P₀</b> is the <b>signed component</b> of that arrow (P₀'s position vector) along the unit normal. The arrow is measured in camera coordinates, and its component has the same length units (metres). Positive means along <b>n</b>; negative means opposite <b>n</b>. Drop the sign: <b>|n · P₀|</b> is the perpendicular, shortest distance from the camera to the plane.</p>
+      <p class="eq"><span><b>n · P₀ = 1 × (1 m) + 0 × (3 m) = +1 m.</b></span><span>The wall is <b>|n · P₀| = 1 m</b> away. That's not the straight-line distance to P₀ (<b>‖P₀‖ = √10 m</b>) or the distance along the ray.</span></p>
+    </article>
+    <article>
+      <h2><span class="num">05</span> Read how much the ray closes the gap</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d5" xmlns="http://www.w3.org/2000/svg">
+        <title id="d5">A ray step from O to Q projects to half a metre on the positive normal axis. The forward component is one metre.</title>
+        <path class="axis" d="M44 170H326" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M85 170V29" marker-end="url(#arrow-axis)"/>
+        <path class="guide" d="M85 70H135V170"/>
+        <path class="ray" d="M85 170L135 70" marker-end="url(#arrow-ray)"/>
+        <path class="normal" d="M85 170H135" marker-end="url(#arrow-normal)"/>
+        <path class="hint" d="M138 169L160 150"/>
+        <circle class="origin" cx="85" cy="170" r="4"/>
+        <circle class="rmark" cx="135" cy="70" r="4"/>
+        <text x="68" y="192">O</text>
+        <text x="77" y="21">Z</text>
+        <text x="147" y="72" class="rtext">Q = (0.5, 1) m</text>
+        <text x="75" y="107" text-anchor="end" class="small">1 m</text>
+        <text x="75" y="124" text-anchor="end" class="small">forward</text>
+        <text x="164" y="151" class="ntext">+0.5 m along n</text>
+        <text x="227" y="193" class="small">X, along +n</text>
+      </svg>
+      <p>Keep only the part of one q-step that goes in the normal direction. The step gains 0.5 m along +n for each metre of forward depth.</p>
+      <p class="eq"><b>n · q = 1 × 0.5 + 0 × 1 = +0.5</b> metres of normal movement per metre of forward depth (m/m).</p>
+    </article>
+    <article>
+      <h2><span class="num">06</span> Divide gap by progress</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d6" xmlns="http://www.w3.org/2000/svg">
+        <title id="d6">On a normal-coordinate number line, two successive gains of half a metre reach the one-metre wall offset.</title>
+        <path class="guide" d="M45 57V160 M180 100V160 M315 57V160"/>
+        <path class="normal" d="M45 57H315" marker-end="url(#arrow-normal)"/>
+        <path class="ray" d="M45 106H180" marker-end="url(#arrow-ray)"/>
+        <path class="ray" d="M180 125H315" marker-end="url(#arrow-ray)"/>
+        <path class="axis" d="M26 160H335" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M45 156V164 M180 156V164 M315 156V164"/>
+        <text x="180" y="45" text-anchor="middle" class="ntext">+1 m gap to wall</text>
+        <text x="112.5" y="95" text-anchor="middle" class="rtext">+0.5 m</text>
+        <text x="247.5" y="114" text-anchor="middle" class="rtext">+0.5 m</text>
+        <text x="112.5" y="127" text-anchor="middle" class="small">from 1 m forward</text>
+        <text x="247.5" y="146" text-anchor="middle" class="small">from 1 m forward</text>
+        <text x="45" y="182" text-anchor="middle">0</text>
+        <text x="180" y="182" text-anchor="middle">0.5</text>
+        <text x="315" y="182" text-anchor="middle">1</text>
+        <text x="180" y="203" text-anchor="middle" class="small">normal coordinate n · P (m) · not Z</text>
+      </svg>
+      <p>At the hit, the ray has gained exactly the normal offset of the wall. Divide that signed offset by the signed gain per metre of forward depth.</p>
+      <p class="eq"><span>Signed gap: <b>n · P₀ = +1 m</b></span><span>Rate of gain: <b>n · q = +0.5 m/m</b></span><span>Forward depth: <b>t = (n · P₀) / (n · q) = (+1 m) / (+0.5 m/m) = 2 m</b></span></p>
+      <p class="meta">The arrows each show the gain from one metre forward. The result is a depth in metres, not a count. It can be fractional.</p>
+    </article>
+    <article>
+      <h2><span class="num">07</span> Put the hit back on the ray</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d7" xmlns="http://www.w3.org/2000/svg">
+        <title id="d7">Scale the ray direction by 2 metres. It passes through Q at (0.5, 1) and hits the wall at P, (1, 2).</title>
+        <path class="axis" d="M61 185H326" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M100 185V29" marker-end="url(#arrow-axis)"/>
+        <path class="wall" d="M160 35V191"/>
+        <path class="guide" d="M100 125H130V185 M100 65H160"/>
+        <path class="ray" d="M100 185L160 65" marker-end="url(#arrow-ray)"/>
+        <circle class="origin" cx="100" cy="185" r="4"/>
+        <circle class="rmark" cx="130" cy="125" r="4"/>
+        <circle class="pmark" cx="160" cy="65" r="5.2"/>
+        <text x="85" y="206">O</text>
+        <text x="332" y="190">X</text>
+        <text x="93" y="22">Z</text>
+        <text x="91" y="70" text-anchor="end" class="small ztext">2 m</text>
+        <text x="91" y="130" text-anchor="end" class="small ztext">1 m</text>
+        <text x="172" y="40" class="ptext small">wall X = 1 m</text>
+        <text x="172" y="70" class="ptext">P = (1, 2) m</text>
+        <text x="171" y="130" class="rtext small">Q = (0.5, 1) m</text>
+        <path class="hint" d="M138 125H165"/>
+      </svg>
+      <p>Multiply both components of q by the depth. The result is 1 m right and 2 m forward, so the point is on both the ray and the wall.</p>
+      <p class="eq"><b>P = t q = (2 m)(0.5, 1) = (1, 2) m.</b></p>
+    </article>
+    <article>
+      <h2><span class="num">08</span> Flip the normal, keep the same hit</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d8" xmlns="http://www.w3.org/2000/svg">
+        <title id="d8">Right-pointing n and left-pointing minus n give opposite signs, but the ray and wall still meet at the same point P.</title>
+        <path class="axis" d="M55 185H326" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M150 185V30" marker-end="url(#arrow-axis)"/>
+        <path class="wall" d="M214 32V193"/>
+        <path class="ray" d="M150 185L214 57" marker-end="url(#arrow-ray)"/>
+        <path class="normal" d="M150 185H86" marker-end="url(#arrow-normal)"/>
+        <path class="normal" d="M150 185H214" marker-end="url(#arrow-normal)"/>
+        <circle class="origin" cx="150" cy="185" r="4"/>
+        <circle class="pmark" cx="214" cy="57" r="5"/>
+        <text x="144" y="205">O</text>
+        <text x="332" y="190">X</text>
+        <text x="143" y="23">Z</text>
+        <text x="226" y="49" class="ptext">same hit P</text>
+        <text x="77" y="170" class="ntext">−n</text>
+        <text x="187" y="170" class="ntext">n</text>
+      </svg>
+      <p>With the normal pointing left, the wall offset is negative. The ray also moves opposite that normal. Both signs change and cancel in the division.</p>
+      <p class="eq"><b>t = (−1 m) / (−0.5 m/m) = 2 m</b> with −n, the same depth as with n.</p>
+    </article>
+    <article>
+      <h2><span class="num">09</span> Watch near-parallel rays</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d9" xmlns="http://www.w3.org/2000/svg">
+        <title id="d9">A dashed parallel ray follows the optical axis and never hits the wall. A slightly tilted ray hits the same wall at 10 metres of forward depth.</title>
+        <path class="axis" d="M44 185H326" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M95 185V24" marker-end="url(#arrow-axis)"/>
+        <path class="alt" d="M95 185V33"/>
+        <path class="wall" d="M109 30V192"/>
+        <path class="guide" d="M95 45H109"/>
+        <path class="ray" d="M95 185L109 45" marker-end="url(#arrow-ray)"/>
+        <path class="hint" d="M103.5 100L164 111 M87 110H95"/>
+        <circle class="origin" cx="95" cy="185" r="4"/>
+        <circle class="pmark" cx="109" cy="45" r="5"/>
+        <text x="81" y="205">O</text>
+        <text x="332" y="190">X</text>
+        <text x="86" y="18">Z</text>
+        <text x="84" y="50" text-anchor="end" class="small ztext">10 m</text>
+        <text x="84" y="100" text-anchor="end" class="rtext small">parallel</text>
+        <text x="84" y="125" text-anchor="end" class="rtext small">q = (0, 1)</text>
+        <text x="126" y="50" class="ptext">hit at (1, 10) m</text>
+        <text x="171" y="110" class="rtext">near parallel</text>
+        <text x="171" y="130" class="rtext small">q = (0.1, 1)</text>
+        <text x="135" y="171" class="ptext small">same wall X = 1 m</text>
+      </svg>
+      <p>The parallel ray makes no progress toward this wall, so it never hits it. The near-parallel ray makes little progress, so a small direction error can change the hit depth a lot.</p>
+      <p class="eq"><span>Parallel: <b>n · q = 0</b>; no hit on this wall.</span><span>Near parallel: <b>t = (1 m) / (0.1 m/m) = 10 m</b>.</span></p>
+      <p class="meta">The article rejects nearly parallel cases. If the line intersection gives <b>t &lt; 0</b>, it is behind the camera and not on the forward ray.</p>
+    </article>
+    <article>
+      <h2><span class="num">10</span> Tell the three distances apart</h2>
+      <svg class="diagram" viewBox="0 0 360 215" role="img" aria-labelledby="d10" xmlns="http://www.w3.org/2000/svg">
+        <title id="d10">A right triangle separates the 1-metre perpendicular wall gap, the 2-metre vertical Z-depth, and the 2.24-metre diagonal camera-to-hit range.</title>
+        <path class="axis" d="M48 186H326" marker-end="url(#arrow-axis)"/>
+        <path class="axis" d="M86 186V26" marker-end="url(#arrow-axis)"/>
+        <path class="wall" d="M151 34V194"/>
+        <path class="guide" d="M86 56H151"/>
+        <path class="right" d="M141 186V176H151"/>
+        <path class="zdepth" d="M86 186V56" marker-end="url(#arrow-depth)"/>
+        <path class="normal" d="M86 186H151" marker-end="url(#arrow-normal)"/>
+        <path class="ray" d="M86 186L151 56"/>
+        <path class="hint" d="M123 112H171 M152 181L171 158"/>
+        <circle class="origin" cx="86" cy="186" r="4"/>
+        <circle class="pmark" cx="151" cy="56" r="5.2"/>
+        <text x="71" y="206">O</text>
+        <text x="332" y="191">X</text>
+        <text x="79" y="20">Z</text>
+        <text x="76" y="112" text-anchor="end" class="small ztext">Z-depth</text>
+        <text x="76" y="129" text-anchor="end" class="ztext">2 m</text>
+        <text x="163" y="53" class="ptext">P = (1, 2) m</text>
+        <text x="178" y="116" class="rtext">ray distance ≈ 2.24 m</text>
+        <text x="178" y="161" class="ntext">wall gap = 1 m</text>
+      </svg>
+      <p>The gap gets you across to the plane. Z-depth gets you as far forward as the hit. Ray distance goes directly from the camera to the hit.</p>
+      <p class="eq"><b>Range = ‖P‖ = √5 m ≈ 2.24 m.</b> The right triangle has legs of 1 m and 2 m.</p>
+    </article>
+  </div>
+  <footer>
+    <p><strong>How this applies to a log end:</strong> In the article's RGB-D method, LiDAR depth gives the fitted plane. Each RGB contour pixel gives a ray. Their intersections give the 3D boundary points.</p>
+    <p><strong>Notes and further reading:</strong> Article working notes on the ray–plane intersection; <cite>RGB-D RGB-boundary</cite> in the manuscript; <cite>Angles Between Vectors</cite> and <cite>Z-Depth vs Euclidean Depth in Perspective Projection</cite> by Andres Namm.</p>
+  </footer>
+</main>
+</body>
+</html>

@@ -8,6 +8,8 @@ The trick is to measure two things in the same direction: **how far away the
 wall is in that direction, and how much of that gap each step along the ray
 closes.**
 
+See the same idea with a different wall in [the ten illustrated steps](html/ray-plane-ten-visualizations.html).
+
 ---
 
 # Table of Contents

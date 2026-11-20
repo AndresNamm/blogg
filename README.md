@@ -1,12 +1,13 @@
 # Blog
 
-Minimal TypeScript blog that converts markdown files to static HTML pages with LaTeX support.
+Minimal TypeScript blog for Markdown and standalone HTML posts. Markdown pages support LaTeX.
 
 ## Structure
 
 ```
 blogg/
-├── posts/          # Markdown files go here
+├── posts/          # Markdown files and shared images
+│   └── html/       # Standalone HTML posts and their assets
 ├── src/            # TypeScript build script
 ├── template/       # HTML template
 └── build/          # Generated static site
@@ -18,16 +19,27 @@ Add markdown files to the `posts/` folder. The blog supports LaTeX math:
 - Inline: `$\sum{n}$`
 - Display: `$$\sum{n}$$`
 
+For a standalone post, put a complete `.html` document in `posts/html/`. Its
+`<title>` in `<head>` supplies the text for the blog index (or the filename if
+the title is missing). The build copies the entire directory to `build/html/`
+without applying the Markdown template. Subdirectories and relative asset
+links work as written, and links to shared images or Markdown posts can use
+`../images/...` or `../post-name.html` from a top-level HTML post. Keep source
+files and assets together in `posts/html/`; `build/html/` is regenerated, and
+source symlinks are not copied.
+
 ### Build
 
 ```bash
 npm run build
 ```
 
-### Watch mode
+### Preview, watch, and test
 
 ```bash
-npm run watch
+npm run dev    # Build and serve at http://localhost:3000/
+npm run watch  # Rebuild when Markdown or standalone HTML sources change
+npm test
 ```
 
 ### Deploy to GitHub Pages

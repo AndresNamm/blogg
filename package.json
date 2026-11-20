@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc && node dist/build.js",
+    "test": "tsc && node --test",
     "watch": "tsc && node dist/build.js --watch",
     "serve": "tsc && node dist/serve.js",
     "dev": "npm run build && npm run serve",

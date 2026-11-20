@@ -6,7 +6,10 @@ import * as chokidar from 'chokidar';
 const rootDir = path.join(__dirname, '..');
 const postsDir = path.join(rootDir, 'posts');
 const buildDir = path.join(rootDir, 'build');
+const htmlDirName = 'html';
 const templatePath = path.join(rootDir, 'template', 'index.html');
+
+type PostLink = { href: string; title: string };
 
 function stripHtml(input: string): string {
   return input.replace(/<[^>]*>/g, '');
@@ -190,18 +193,75 @@ function extractTitle(mdPath: string): string {
   return fileName.charAt(0).toUpperCase() + fileName.slice(1);
 }
 
-function generateIndex(mdFiles: string[]) {
-  const links = mdFiles.map(mdPath => {
-    const fileName = path.basename(mdPath, '.md');
-    const title = extractTitle(mdPath);
-    return `<li><a href="${fileName}.html">${title}</a></li>`;
-  }).join('\n    ');
+function extractHtmlTitle(content: string, fileName: string): string {
+  const head = content.match(/<head\b[^>]*>([\s\S]*?)<\/head\s*>/i)?.[1];
+  if (head) {
+    const elements = /<!--[\s\S]*?-->|<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>|<title\b[^>]*>([\s\S]*?)<\/title\s*>/gi;
+    for (const match of head.matchAll(elements)) {
+      if (match[2] !== undefined) {
+        return match[2].replace(/\s+/g, ' ').trim() || path.basename(fileName, '.html');
+      }
+    }
+  }
+  return path.basename(fileName, '.html');
+}
+
+function copyHtmlPosts(): PostLink[] {
+  const source = path.join(postsDir, htmlDirName);
+  const destination = path.join(buildDir, htmlDirName);
+  const links: PostLink[] = [];
+
+  // This output subtree is reserved for standalone posts and their assets.
+  fs.rmSync(destination, { recursive: true, force: true });
+  if (!fs.lstatSync(source, { throwIfNoEntry: false })?.isDirectory()) {
+    return links;
+  }
+
+  function copyDirectory(parts: string[]) {
+    const dir = path.join(source, ...parts);
+    const output = path.join(destination, ...parts);
+    ensureDir(output);
+    const entries = fs.readdirSync(dir, { withFileTypes: true })
+      .sort((a, b) => a.name.localeCompare(b.name, 'en'));
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        copyDirectory([...parts, entry.name]);
+      } else if (entry.isFile()) {
+        const file = path.join(dir, entry.name);
+        fs.copyFileSync(file, path.join(output, entry.name));
+        if (entry.name.endsWith('.html')) {
+          links.push({
+            href: [htmlDirName, ...parts, entry.name].map(encodeURIComponent).join('/'),
+            title: extractHtmlTitle(fs.readFileSync(file, 'utf-8'), entry.name)
+          });
+        }
+      }
+    }
+  }
+
+  copyDirectory([]);
+  return links;
+}
+
+function escapeLinkTitle(title: string): string {
+  // Preserve entity references so an authored title is decoded only once.
+  return title
+    .replace(/&(?!(?:[a-z][a-z0-9]*|#\d+|#x[\da-f]+);)/gi, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function generateIndex(posts: PostLink[]) {
+  const links = posts.map(({ href, title }) =>
+    `<li><a href="${href}">${escapeLinkTitle(title)}</a></li>`
+  ).join('\n    ');
 
   const indexContent = `<h1>Blog Posts</h1>\n<ul class="post-list">\n    ${links}\n</ul>`;
   const template = readTemplate();
   const finalHtml = template
     .replace('{{TITLE}}', 'Blog')
-    .replace('{{CONTENT}}', indexContent);
+    .replace('{{CONTENT}}', () => indexContent);
 
   fs.writeFileSync(path.join(buildDir, 'index.html'), finalHtml);
   console.log('Generated: index.html');
@@ -228,32 +288,47 @@ async function build() {
   ensureDir(buildDir);
   const mdFiles = getAllMarkdownFiles();
 
-  if (mdFiles.length === 0) {
-    console.log('No markdown files found in posts/');
-    return;
-  }
-
   await Promise.all(mdFiles.map(convertMarkdownToHtml));
-  generateIndex(mdFiles);
+  const htmlLinks = copyHtmlPosts();
+  const markdownLinks = mdFiles.map(mdPath => ({
+    href: `${encodeURIComponent(path.basename(mdPath, '.md'))}.html`,
+    title: extractTitle(mdPath)
+  }));
+  generateIndex([...markdownLinks, ...htmlLinks]);
   copyImages();
   console.log('Build complete!');
 }
 
+function reportBuildError(error: unknown) {
+  console.error(error);
+  process.exitCode = 1;
+}
+
 function watch() {
   console.log('Watching for changes in posts/...');
-  const watcher = chokidar.watch('*.md', {
+  const watcher = chokidar.watch('.', {
     cwd: postsDir,
-    ignoreInitial: false
+    followSymlinks: false,
+    ignoreInitial: true
   });
+  let pending = Promise.resolve();
+  function rebuild() {
+    pending = pending.then(build).catch(error => console.error(error));
+  }
 
-  watcher.on('add', () => build());
-  watcher.on('change', () => build());
-  watcher.on('unlink', () => build());
+  watcher.on('ready', rebuild);
+  watcher.on('all', (_event, file) => {
+    const [top, nested] = file.split(path.sep);
+    if (top === htmlDirName || (nested === undefined && top.endsWith('.md'))) {
+      rebuild();
+    }
+  });
+  watcher.on('error', reportBuildError);
 }
 
 const args = process.argv.slice(2);
 if (args.includes('--watch')) {
   watch();
 } else {
-  build();
+  build().catch(reportBuildError);
 }
