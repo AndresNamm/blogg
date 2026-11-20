@@ -300,7 +300,7 @@
       </svg>
       <p>The parallel ray makes no progress toward this wall, so it never hits it. The near-parallel ray makes little progress, so a small direction error can change the hit depth a lot.</p>
       <p class="eq"><span>Parallel: <b>n · q = 0</b>; no hit on this wall.</span><span>Near parallel: <b>t = (1 m) / (0.1 m/m) = 10 m</b>.</span></p>
-      <p class="meta">The article rejects nearly parallel cases. If the line intersection gives <b>t &lt; 0</b>, it is behind the camera and not on the forward ray.</p>
+      <p class="meta">Nearly parallel intersections can be unstable. If the line intersection gives <b>t &lt; 0</b>, it is behind the camera and not on the forward ray.</p>
     </article>
     <article>
       <h2><span class="num">10</span> Tell the three distances apart</h2>
@@ -331,8 +331,7 @@
     </article>
   </div>
   <footer>
-    <p><strong>How this applies to a log end:</strong> In the article's RGB-D method, LiDAR depth gives the fitted plane. Each RGB contour pixel gives a ray. Their intersections give the 3D boundary points.</p>
-    <p><strong>Notes and further reading:</strong> Article working notes on the ray–plane intersection; <cite>RGB-D RGB-boundary</cite> in the manuscript; <cite>Angles Between Vectors</cite> and <cite>Z-Depth vs Euclidean Depth in Perspective Projection</cite> by Andres Namm.</p>
+    <p><strong>Further reading:</strong> <a href="../angle.html">Angles Between Vectors</a> and <a href="../z_depth_vs_euclidean_depth.html">Z-Depth vs Euclidean Depth in Perspective Projection</a>.</p>
   </footer>
 </main>
 </body>
