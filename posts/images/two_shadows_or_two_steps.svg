@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360" role="img" aria-labelledby="title description">
+  <title id="title">Two shadows or two steps?</title>
+  <desc id="description">Both panels use the same scale. The diagonal axis follows (1,1) and the vertical axis follows (0,1). From the point (2,3), red dashed perpendiculars reach (2.5,2.5) and (0,3). Blue solid guides parallel to the opposite axes reach (2,2) and (0,1). Only the blue intercepts give steps that add back to (2,3).</desc>
+  <style>
+    text { font-family: system-ui, sans-serif; font-size: 15px; fill: #182733; }
+    .heading { font-size: 22px; font-weight: 700; }
+    .axis { fill: none; stroke: #53636e; stroke-width: 2; marker-end: url(#arrow); }
+    .drop { fill: none; stroke: #aa322d; stroke-width: 3; stroke-dasharray: 6 4; }
+    .guide { fill: none; stroke: #1663a0; stroke-width: 3; }
+    .shadow { fill: white; stroke: #aa322d; stroke-width: 2.5; }
+    .step { fill: #1663a0; }
+    .red { fill: #952823; }
+    .blue { fill: #15598d; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 1 10 5 0 9Z" fill="#53636e"/>
+    </marker>
+    <!-- Each panel maps (x,y) to (80 + 58x, 314 - 58y). -->
+    <g id="axes">
+      <path class="axis" d="M80 314V81"/>
+      <path class="axis" d="M80 314 283 111"/>
+      <text x="88" y="91">b₂</text>
+      <text x="287" y="114">b₁</text>
+      <text x="72" y="335" text-anchor="end">(0,0)</text>
+    </g>
+    <g id="target">
+      <circle cx="196" cy="140" r="5" fill="#182733"/>
+      <text x="194" y="126" text-anchor="end">s = (2,3)</text>
+    </g>
+  </defs>
+  <rect width="720" height="360" fill="white"/>
+  <path d="M360 16V340" stroke="#c8d0d5"/>
+  <g>
+    <text class="heading" x="20" y="34">1. Find each shadow</text>
+    <path class="drop" d="M21 58h30"/>
+    <text x="60" y="63">Perpendicular to the axis you read</text>
+    <use href="#axes"/>
+    <path class="drop" d="M80 140H196L225 169"/>
+    <path d="M80 150h10v-10 M218 162l-7 7 7 7" fill="none" stroke="#aa322d" stroke-width="1.5"/>
+    <circle class="shadow" cx="80" cy="140" r="4.5"/>
+    <circle class="shadow" cx="225" cy="169" r="4.5"/>
+    <text class="red" x="71" y="146" text-anchor="end">p₂ = 3</text>
+    <text class="red" x="234" y="187">p₁ = 2.5</text>
+    <use href="#target"/>
+  </g>
+  <g transform="translate(360 0)">
+    <text class="heading" x="20" y="34">2. Read each step count</text>
+    <path class="guide" d="M21 58h30"/>
+    <text x="60" y="63">Parallel to the other axis</text>
+    <use href="#axes"/>
+    <path class="guide" d="M80 256 196 140V198"/>
+    <rect class="step" x="75.5" y="251.5" width="9" height="9"/>
+    <rect class="step" x="191.5" y="193.5" width="9" height="9"/>
+    <text class="blue" x="71" y="262" text-anchor="end">c₂ = 1</text>
+    <text class="blue" x="206" y="214">c₁ = 2</text>
+    <use href="#target"/>
+  </g>
+</svg>
